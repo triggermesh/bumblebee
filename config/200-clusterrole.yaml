@@ -11,7 +11,7 @@ rules: [] # Rules are automatically filled in by the controller manager.
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: triggermesh-core
+  name: transformation-core
   labels:
     transformation.flow.triggermesh.io/controller: "true"
 rules:
@@ -53,23 +53,3 @@ rules:
       - get
       - list
       - watch
-# ---
-# apiVersion: rbac.authorization.k8s.io/v1
-# kind: ClusterRole
-# metadata:
-#   name: transformation-channelable-manipulator
-#   labels:
-#     duck.knative.dev/channelable: "true"
-# rules:
-#   - apiGroups:
-#       - flow.triggermesh.io
-#     resources:
-#       - transformations
-#       - transformations/status
-#     verbs:
-#       - create
-#       - get
-#       - list
-#       - watch
-#       - update
-#       - patch

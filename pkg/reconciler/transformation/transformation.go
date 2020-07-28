@@ -33,6 +33,8 @@ import (
 	servingv1client "knative.dev/serving/pkg/client/clientset/versioned"
 	servingv1listers "knative.dev/serving/pkg/client/listers/serving/v1"
 
+	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+
 	transformationv1alpha1 "github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
 	transformationreconciler "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/reconciler/transformation/v1alpha1/transformation"
 	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformation/resources"
@@ -113,10 +115,9 @@ func (r *Reconciler) reconcile(ctx context.Context, t *transformationv1alpha1.Tr
 		if err != nil {
 			logger.Errorf("Cannot create kn service: %v", err)
 			t.Status.MarkServiceUnavailable(t.Name)
-			return nil
+			return err
 		}
 		logger.Info("Kn service created")
-		t.Status.MarkServiceAvailable()
 		return nil
 	} else if err != nil {
 		logger.Errorf("Error reconciling service %s: %v", t.Name, err)
@@ -125,7 +126,7 @@ func (r *Reconciler) reconcile(ctx context.Context, t *transformationv1alpha1.Tr
 
 	if !resources.KnServiceHasEnvVar(svc, envVarName, string(trn)) ||
 		!resources.KnServiceImage(svc, r.transformerImage) {
-		logger.Info("Kn service spec outdated, updting service")
+		logger.Info("Kn service spec outdated, updating service")
 		newSvc := resources.NewKnService(t.Namespace, t.Name,
 			resources.Image(r.transformerImage),
 			resources.EnvVar(envVarName, string(trn)),
@@ -135,16 +136,19 @@ func (r *Reconciler) reconcile(ctx context.Context, t *transformationv1alpha1.Tr
 		if err != nil {
 			logger.Errorf("Cannot update kn service: %v", err)
 			t.Status.MarkServiceUnavailable(t.Name)
-			return nil
+			return err
 		}
 	}
 
-	t.Status.MarkServiceAvailable()
-	t.Status.Address = &duckv1.Addressable{
-		URL: &apis.URL{
-			Scheme: "http",
-			Host:   network.GetServiceHostname(t.Name, t.Namespace),
-		},
+	if svc.IsReady() {
+		t.Status.Address = &duckv1.Addressable{
+			URL: &apis.URL{
+				Scheme: "http",
+				Host:   network.GetServiceHostname(t.Name, t.Namespace),
+			},
+		}
+		t.Status.MarkServiceAvailable()
 	}
+
 	return nil
 }
