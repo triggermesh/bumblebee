@@ -88,6 +88,7 @@ spec:
   events:
   - transform: '[{"operation": "delete", "spec": {"paths": ["extra"]}}]'
   - transform: '[{"operation": "uuid", "spec": {"uuid": { "version": 4 }}}]'
+  - transform: '[{"operation": "shift", "spec": {"not-foo": "foo"}}]'
   - targetType: ce.after.transformation
     transform: '[{"operation": "concat", "spec": {"sources": [{"value": "hello"}, {"path": "project"}], "targetPath": "project", "delim": ","}}]'
 
