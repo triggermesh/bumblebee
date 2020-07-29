@@ -25,6 +25,9 @@ spec:
     singular: transformation
     categories:
     - all
+    - knative
+    - eventing
+    - transformations
     shortNames:
     - trn
   versions: 
@@ -55,6 +58,40 @@ spec:
                   - transform
             required: 
             - events
+          status:
+            type: object
+            properties:
+              observedGeneration:
+                type: integer
+                format: int64
+              conditions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    status:
+                      type: string
+                      enum: ['True', 'False', Unknown]
+                    severity:
+                      type: string
+                      enum: [Error, Warning, Info]
+                    reason:
+                      type: string
+                    message:
+                      type: string
+                    lastTransitionTime:
+                      type: string
+                      format: date-time
+                  required:
+                  - type
+                  - status
+              address:
+                type: object
+                properties:
+                  url:
+                    type: string
     additionalPrinterColumns:
     - name: Address
       type: string

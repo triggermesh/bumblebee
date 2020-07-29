@@ -21,7 +21,9 @@ import (
 	"knative.dev/pkg/apis"
 )
 
-var condSet = apis.NewLivingConditionSet()
+var condSet = apis.NewLivingConditionSet(
+	TransformationConditionReady,
+)
 
 // GetGroupVersionKind implements kmeta.OwnerRefable
 func (t *Transformation) GetGroupVersionKind() schema.GroupVersionKind {

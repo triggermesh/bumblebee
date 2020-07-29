@@ -90,6 +90,6 @@ type TransformationList struct {
 }
 
 // GetStatus retrieves the status of the resource. Implements the KRShaped interface.
-func (as *Transformation) GetStatus() *duckv1.Status {
-	return &as.Status.Status
+func (t *Transformation) GetStatus() *duckv1.Status {
+	return &t.Status.Status
 }

@@ -81,8 +81,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, t *transformationv1alpha
 		return err
 	}
 
-	t.Status.InitializeConditions()
-
 	// Reconcile Transformation and then write back any status updates regardless of
 	// whether the reconcile error out.
 	reconcileErr := r.reconcile(ctx, t)
@@ -109,6 +107,7 @@ func (r *Reconciler) reconcile(ctx context.Context, t *transformationv1alpha1.Tr
 		svc = resources.NewKnService(t.Namespace, t.Name,
 			resources.Image(r.transformerImage),
 			resources.EnvVar(envVarName, string(trn)),
+			// resources.KsvcLabelVisibilityClusterLocal(),
 			resources.Owner(t),
 		)
 		_, err := r.servingClientSet.ServingV1().Services(t.Namespace).Create(svc)
@@ -130,6 +129,7 @@ func (r *Reconciler) reconcile(ctx context.Context, t *transformationv1alpha1.Tr
 		newSvc := resources.NewKnService(t.Namespace, t.Name,
 			resources.Image(r.transformerImage),
 			resources.EnvVar(envVarName, string(trn)),
+			// resources.KsvcLabelVisibilityClusterLocal(),
 		)
 		svc.Spec = newSvc.Spec
 		_, err := r.servingClientSet.ServingV1().Services(t.Namespace).Update(svc)

@@ -5,6 +5,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"knative.dev/pkg/kmeta"
+	serving "knative.dev/serving/pkg/apis/serving"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
@@ -109,4 +110,18 @@ func KnServiceImage(svc *servingv1.Service, image string) bool {
 		return false
 	}
 	return true
+}
+
+// KsvcLabelVisibilityClusterLocal sets label to avoid exposing the service externally.
+func KsvcLabelVisibilityClusterLocal() Option {
+	return func(svc *servingv1.Service) {
+		if svc.Labels != nil {
+			svc.Labels[serving.VisibilityLabelKey] = serving.VisibilityClusterLocal
+			return
+		}
+		labels := map[string]string{
+			serving.VisibilityLabelKey: serving.VisibilityClusterLocal,
+		}
+		svc.Labels = labels
+	}
 }
