@@ -86,9 +86,10 @@ metadata:
   name: demo
 spec:
   events:
-  - transform: '[{"operation": "delete", "spec": {"paths": ["extra"]}}]'
-  - transform: '[{"operation": "uuid", "spec": {"uuid": { "version": 4 }}}]'
-  - transform: '[{"operation": "shift", "spec": {"not-foo": "foo"}}]'
-  - targetType: ce.after.transformation
-    transform: '[{"operation": "concat", "spec": {"sources": [{"value": "hello"}, {"path": "project"}], "targetPath": "project", "delim": ","}}]'
-
+  - transform: '[
+      {"operation": "delete", "spec": {"paths": ["extra"]}},
+      {"operation": "shift", "spec": {"not-foo": "foo"}},
+      {"operation": "concat", "spec": {"sources": [{"value": "hello"}, {"path": "project"}], "targetPath": "sub.project", "delim": ","}},
+      {"operation": "uuid", "spec": {"sub.uuid": {"version": 4}}}
+      ]'
+    targetType: ce.after.transformation
