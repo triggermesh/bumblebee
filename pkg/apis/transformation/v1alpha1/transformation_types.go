@@ -54,14 +54,17 @@ var (
 
 // TransformationSpec holds the desired state of the Transformation (from the client).
 type TransformationSpec struct {
-	Transformations []EventTransformation `json:"events"`
+	Transformations []EventTransformation `json:"transformations"`
+	TargetType      string                `json:"targetType,omitempty"`
 }
 
 // EventTransformation describes transformation schemes for different CE types.
 type EventTransformation struct {
-	CEType     string `json:"ceType,omitempty"`
-	TargetType string `json:"targetType,omitempty"`
-	Transform  string `json:"transform"`
+	Name  string `json:"name"`
+	Paths []struct {
+		Key   string `json:"key,omitempty"`
+		Value string `json:"value,omitempty"`
+	} `json:"paths"`
 }
 
 const (

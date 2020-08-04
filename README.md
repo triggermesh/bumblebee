@@ -5,7 +5,7 @@ Transformation is an addressable CR based on Knative Serving and
 Transformation object controller creates Knative Service that 
 accepts CloudEvents, applies 
 [transformation](https://github.com/qntfy/kazaam#specification-support) 
-and responses back with new CloudEvent.
+and responds back with new CloudEvent.
 
 Below you can find a sample manifest which has PingSource that 
 generates a json:
@@ -104,7 +104,7 @@ spec:
       apiVersion: flow.triggermesh.io/v1alpha1
       kind: Transformation
       name: demo
-      namespace: default
+      namespace: tzununbekov
 
 ---
 
@@ -122,7 +122,7 @@ spec:
       apiVersion: serving.knative.dev/v1
       kind: Service
       name: event-display
-      namespace: default
+      namespace: tzununbekov
 
 ---
 
