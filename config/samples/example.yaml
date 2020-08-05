@@ -260,11 +260,11 @@ metadata:
   name: demo
 spec:
   transformations:
-  - name: delete
-    paths:
+  # - name: delete
+    # paths:
       # remove-object
-    - key: commits[0].author.name
-      value: Timur Zununbekov
+    # - key: commits[0].author.name
+      # value: Timur Zununbekov
       # remove-field
       # - key: compare
       # remove-field-if-my-value-is
@@ -274,10 +274,20 @@ spec:
         # value: wrongvalue
       # remove-everyhing-with-this-value
       # - value: f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa
-  # - name: add
-  #   paths:
-  #     - key: new-field
-  #       value: new-value
-  #     - key: new.object.key
-  #       value: newobjectkey
+  - name: add
+    paths:
+    # new key
+    - key: HI
+      value: THERE
+    # # existing object, new key
+    - key: installation.TRIGGERMESH
+      value: "42"
+    # new object
+    - key: TRIGGERMESH.CLOUD
+      value: "true"
+    # new key in arrays 
+    - key: NEWOBJECT.TRIGGERMESH[2]
+      value: WHOA"
+    - key: commits[1].TRIGGERMESH
+      value: "123341"
   targetType: ce.after.transformation
