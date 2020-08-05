@@ -263,8 +263,8 @@ spec:
   - name: delete
     paths:
       # remove-object
-      - key: head_commit.author.name
-      # - value: Timur Zununbekov
+    - key: commits[0].author.name
+      value: Timur Zununbekov
       # remove-field
       # - key: compare
       # remove-field-if-my-value-is
@@ -275,7 +275,9 @@ spec:
       # remove-everyhing-with-this-value
       # - value: f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa
   # - name: add
-    # paths:
-      # - key: new-field
-        # value: new-value
+  #   paths:
+  #     - key: new-field
+  #       value: new-value
+  #     - key: new.object.key
+  #       value: newobjectkey
   targetType: ce.after.transformation

@@ -28,7 +28,7 @@ func (d Delete) New(key, value string) interface{} {
 
 func (d Delete) Apply(data []byte) []byte {
 	// fmt.Printf("operation: %s\npaths: %v\n", OperationName, d)
-	result, err := d.parse(data, "")
+	result, err := d.parse(data, "", "")
 	if err != nil {
 		log.Println(err)
 	}
@@ -38,57 +38,50 @@ func (d Delete) Apply(data []byte) []byte {
 		log.Printf("cannot marshal result: %v", err)
 	}
 
-	// fmt.Println(string(output))
 	return output
 }
 
-func (d Delete) parse(data []byte, curPath string) (interface{}, error) {
-	var m map[string]interface{}
-
-	if err := json.Unmarshal(data, &m); err != nil {
-		return string(data), nil
-	}
-
+func (d Delete) parse(data interface{}, key, path string) (interface{}, error) {
 	output := make(map[string]interface{})
-	for k, v := range m {
-		path := fmt.Sprintf("%s.%s", curPath, k)
-		if d.filter(path, v) {
-			// fmt.Println("filtered: ", path)
-			continue
+	switch value := data.(type) {
+	case []byte:
+		var m interface{}
+		if err := json.Unmarshal(value, &m); err != nil {
+			return nil, fmt.Errorf("unmarshal err: %v", err)
 		}
-		// fmt.Println(path)
-		switch value := v.(type) {
-		case float64, bool, string:
-			output[k] = value
-		case map[string]interface{}:
-			data, err := json.Marshal(value)
+		o, err := d.parse(m, key, path)
+		if err != nil {
+			return nil, fmt.Errorf("recursive call in []bytes case: %v", err)
+		}
+		return o, nil
+	case float64, bool, string:
+		return value, nil
+	case []interface{}:
+		slice := []interface{}{}
+		for i, v := range value {
+			o, err := d.parse(v, key, fmt.Sprintf("%s[%d]", path, i))
 			if err != nil {
-				return nil, fmt.Errorf("marshal map[string]interface{}: %v", err)
+				return nil, fmt.Errorf("recursive call in []interface case: %v", err)
 			}
-			o, err := d.parse(data, path)
+			slice = append(slice, o)
+		}
+		return slice, nil
+	case map[string]interface{}:
+		for k, v := range value {
+			subPath := fmt.Sprintf("%s.%s", path, k)
+			if d.filter(subPath, v) {
+				continue
+			}
+			o, err := d.parse(v, k, subPath)
 			if err != nil {
-				return nil, fmt.Errorf("recursive call: %v", err)
+				return nil, fmt.Errorf("recursive call in map[]interface case: %v", err)
 			}
 			output[k] = o
-		case []interface{}:
-			slice := []interface{}{}
-			for i, v := range value {
-				data, err := json.Marshal(v)
-				if err != nil {
-					return nil, fmt.Errorf("marshal []interface{}: %v", err)
-				}
-				o, err := d.parse(data, fmt.Sprintf("%s[%d]", path, i))
-				if err != nil {
-					return nil, fmt.Errorf("recursive call: %v", err)
-				}
-				slice = append(slice, o)
-			}
-			output[k] = slice
-		case nil:
-			output[k] = nil
-		default:
-			log.Printf("unhandled type %T\n", value)
 		}
+	case nil:
+		output[key] = nil
+	default:
+		log.Printf("unhandled type %T\n", value)
 	}
 
 	return output, nil
