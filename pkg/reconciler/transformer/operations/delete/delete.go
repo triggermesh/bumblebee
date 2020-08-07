@@ -26,19 +26,18 @@ func (d Delete) New(key, value string) interface{} {
 	}
 }
 
-func (d Delete) Apply(data []byte) []byte {
-	// fmt.Printf("operation: %s\npaths: %v\n", OperationName, d)
+func (d Delete) Apply(data []byte) ([]byte, error) {
 	result, err := d.parse(data, "", "")
 	if err != nil {
-		log.Println(err)
+		return data, err
 	}
 
 	output, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
-		log.Printf("cannot marshal result: %v", err)
+		return data, err
 	}
 
-	return output
+	return output, nil
 }
 
 func (d Delete) parse(data interface{}, key, path string) (interface{}, error) {

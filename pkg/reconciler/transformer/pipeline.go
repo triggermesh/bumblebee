@@ -3,6 +3,7 @@ package transformer
 import (
 	"context"
 	"fmt"
+	"log"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
@@ -15,7 +16,7 @@ type Pipeline struct {
 
 type Transformer interface {
 	New(string, string) interface{}
-	Apply([]byte) []byte
+	Apply([]byte) ([]byte, error)
 }
 
 type Transformation struct {
@@ -56,9 +57,11 @@ func (p *Pipeline) Start(ctx context.Context, ceClient cloudevents.Client) error
 
 func (p *Pipeline) receiveAndTransform(ctx context.Context, event cloudevents.Event) (*cloudevents.Event, error) {
 	for _, tr := range p.Transformers {
-		data := tr.Apply(event.Data())
-		err := event.SetData(cloudevents.ApplicationJSON, data)
+		data, err := tr.Apply(event.Data())
 		if err != nil {
+			log.Printf("Cannot apply transformation: %v", err)
+		}
+		if err = event.SetData(cloudevents.ApplicationJSON, data); err != nil {
 			return nil, fmt.Errorf("cannot set data: %v", err)
 		}
 	}

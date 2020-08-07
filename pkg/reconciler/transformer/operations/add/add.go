@@ -2,7 +2,6 @@ package add
 
 import (
 	"encoding/json"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -26,20 +25,20 @@ func (a Add) New(key, value string) interface{} {
 	}
 }
 
-func (a Add) Apply(data []byte) []byte {
+func (a Add) Apply(data []byte) ([]byte, error) {
 	input := sliceToMap(strings.Split(a.Path, "."), a.Value)
 	event := make(map[string]interface{})
 	if err := json.Unmarshal(data, &event); err != nil {
-		log.Fatalf("unmarshal err: %v", err)
+		return data, err
 	}
 
 	result := mergeMaps(event, input)
 	output, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
-		log.Printf("cannot marshal result: %v", err)
+		return data, err
 	}
 
-	return output
+	return output, nil
 }
 
 func mergeMaps(source, appendix map[string]interface{}) map[string]interface{} {
@@ -94,34 +93,34 @@ func sliceToMap(path []string, value string) map[string]interface{} {
 	}
 
 	if len(path) == 1 {
-		if array {
-			arr := make([]interface{}, index+1, index+1)
-			arr[index] = convert(value)
+		if !array {
 			return map[string]interface{}{
-				path[0]: arr,
+				path[0]: tryConvert(value),
 			}
 		}
+		arr := make([]interface{}, index+1, index+1)
+		arr[index] = tryConvert(value)
 		return map[string]interface{}{
-			path[0]: convert(value),
+			path[0]: arr,
 		}
 	}
 
 	key := path[0]
 	path = path[1:]
 	m := sliceToMap(path, value)
-	if array {
-		arr := make([]interface{}, index+1, index+1)
-		arr[index] = m
+	if !array {
 		return map[string]interface{}{
-			key: arr,
+			key: m,
 		}
 	}
+	arr := make([]interface{}, index+1, index+1)
+	arr[index] = m
 	return map[string]interface{}{
-		key: m,
+		key: arr,
 	}
 }
 
-func convert(value string) interface{} {
+func tryConvert(value string) interface{} {
 	b, err := strconv.ParseBool(value)
 	if err == nil {
 		return b
