@@ -261,47 +261,45 @@ metadata:
   name: demo
 spec:
   transformations:
-  # - name: delete
-  #   paths:
-  #     # remove key if value is equal
-  #   - key: commits[0].author.name
-  #     value: Timur Zununbekov
-  #     # remove key
-  #   - key: compare
-  #   # remove everyhing with this value
-  #   - value: f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa
-  # - name: add
-  #   paths:
-  #   # new key
-  #   - key: HI
-  #     value: THERE
-  #   # # existing object, new key
-  #   - key: installation.TRIGGERMESH
-  #     value: "42"
-  #   # new object
-  #   - key: TRIGGERMESH.CLOUD
-  #     value: "true"
-  #   # new array
-  #   - key: NEWOBJECT.TRIGGERMESH[2]
-  #     value: "WHOA"
-  #   # new key in existing array
-  #   - key: commits[1].TRIGGERMESH
-  #     value: "123341"
-  # - name: shift
-  #   paths:
-  #     # key rename
-  #   - key: ref:NEWREF
-  #     # key rename with value filter
-  #   - key: ref:none
-  #     value: wronstring
-  #     # object rename
-  #   - key: sender:NEWSENDER
-  #     # move to the new key
-  #   - key: commits[0].id:newCommits[1].NEWID
-  #     # move array item
-  #   - key: head_commit.modified[0]:NEWMOD
-  # 
-  #
+  - name: delete
+    paths:
+      # remove key if value is equal
+    - key: commits[0].author.name
+      value: Timur Zununbekov
+      # remove key
+    - key: compare
+    # remove everyhing with this value
+    - value: f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa
+  - name: add
+    paths:
+    # new key
+    - key: HI
+      value: THERE
+    # # existing object, new key
+    - key: installation.TRIGGERMESH
+      value: "42"
+    # new object
+    - key: TRIGGERMESH.CLOUD
+      value: "true"
+    # new array
+    - key: NEWOBJECT.TRIGGERMESH[2]
+      value: "WHOA"
+    # new key in existing array
+    - key: commits[1].TRIGGERMESH
+      value: "123341"
+  - name: shift
+    paths:
+      # key rename
+    - key: ref:NEWREF
+      # key rename with value filter
+    - key: ref:none
+      value: wronstring
+      # object rename
+    - key: sender:NEWSENDER
+      # move to the new key
+    - key: commits[0].id:newCommits[1].NEWID
+      # move array item
+    - key: head_commit.modified[0]:NEWMOD
   # store field from commits list in commitID variable  
   - name: store
     paths:

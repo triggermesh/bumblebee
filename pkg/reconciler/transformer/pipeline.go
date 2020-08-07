@@ -10,20 +10,13 @@ import (
 	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations"
 )
 
+// Pipeline is a set of Transformations that that are
+// sequentially applied to JSON data.
 type Pipeline struct {
 	Transformers []operations.Transformer
 }
 
-type Transformation struct {
-	Name   string
-	Fields []kv
-}
-
-type kv struct {
-	key   string
-	value string
-}
-
+// NewPipeline loads available Transformations and creates a Pipeline.
 func NewPipeline(transformations []v1alpha1.EventTransformation) (*Pipeline, error) {
 	availableTransformers := operations.Register()
 	pipe := []operations.Transformer{}
@@ -33,10 +26,10 @@ func NewPipeline(transformations []v1alpha1.EventTransformation) (*Pipeline, err
 		if !exist {
 			return nil, fmt.Errorf("transformation %q not found", transformation.Name)
 		}
-
 		for _, kv := range transformation.Paths {
 			tr := operation.New(kv.Key, kv.Value)
 			pipe = append(pipe, tr.(operations.Transformer))
+			log.Printf("%s: %q loaded\n", transformation.Name, kv.Key)
 		}
 	}
 
@@ -45,11 +38,15 @@ func NewPipeline(transformations []v1alpha1.EventTransformation) (*Pipeline, err
 	}, nil
 }
 
+// Start runs CloudEvent receiver and applies Transformation pipeline
+// on incoming events.
 func (p *Pipeline) Start(ctx context.Context, ceClient cloudevents.Client) error {
+	log.Println("Starting CloudEvent receiver")
 	return ceClient.StartReceiver(ctx, p.receiveAndTransform)
 }
 
 func (p *Pipeline) receiveAndTransform(ctx context.Context, event cloudevents.Event) (*cloudevents.Event, error) {
+	log.Printf("Received %q event\n", event.Type())
 	for _, tr := range p.Transformers {
 		data, err := tr.Apply(event.Data())
 		if err != nil {
@@ -59,6 +56,7 @@ func (p *Pipeline) receiveAndTransform(ctx context.Context, event cloudevents.Ev
 			return nil, fmt.Errorf("cannot set data: %v", err)
 		}
 	}
+	// TODO: handle CE attributes same way as a JSON payload.
 	event.SetType("ce.after.transformation")
 	return &event, nil
 }

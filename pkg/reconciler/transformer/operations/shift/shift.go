@@ -2,12 +2,13 @@ package shift
 
 import (
 	"encoding/json"
-	"strconv"
 	"strings"
 
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/store/storage"
+	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/common/convert"
+	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/common/storage"
 )
 
+// Shift object implements Transformer interface.
 type Shift struct {
 	Path    string
 	NewPath string
@@ -18,16 +19,21 @@ type Shift struct {
 
 const delimeter string = ":"
 
+// OperationName is used to identify this transformation.
 var OperationName string = "shift"
 
+// Register adds this transformation to the map which will
+// be used to create Transformation pipeline.
 func Register(m map[string]interface{}) {
 	m[OperationName] = &Shift{}
 }
 
+// InjectVars sets a shared Storage with Pipeline variables.
 func (s *Shift) InjectVars(storage *storage.Storage) {
 	s.variables = storage
 }
 
+// New returns a new instance of Shift object.
 func (s *Shift) New(key, value string) interface{} {
 	// doubtful scheme, review needed
 	keys := strings.Split(key, delimeter)
@@ -43,24 +49,26 @@ func (s *Shift) New(key, value string) interface{} {
 	}
 }
 
+// Apply is a main method of Transformation that moves existing
+// values to a new locations.
 func (s *Shift) Apply(data []byte) ([]byte, error) {
-	oldPath := sliceToMap(strings.Split(s.Path, "."), "")
+	oldPath := convert.SliceToMap(strings.Split(s.retrieveString(s.Path), "."), "")
 
 	event := make(map[string]interface{})
 	if err := json.Unmarshal(data, &event); err != nil {
 		return data, err
 	}
 
-	newEvent, value := getValue(event, oldPath)
+	newEvent, value := extractValue(event, oldPath)
 	if s.Value != "" {
-		if !equal(tryConvert(s.Value), value) {
+		if !equal(convert.TryStringToJSONType(s.retrieveInterface(s.Value)), value) {
 			return data, nil
 		}
 	}
 
-	newPath := sliceToMap(strings.Split(s.NewPath, "."), value)
+	newPath := convert.SliceToMap(strings.Split(s.retrieveString(s.NewPath), "."), value)
 
-	result := mergeMaps(newEvent, newPath)
+	result := convert.MergeMaps(newEvent, newPath)
 	output, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		return data, err
@@ -69,7 +77,21 @@ func (s *Shift) Apply(data []byte) ([]byte, error) {
 	return output, nil
 }
 
-func getValue(source, path map[string]interface{}) (map[string]interface{}, interface{}) {
+func (s *Shift) retrieveInterface(key string) interface{} {
+	if value := s.variables.Get(key); value != nil {
+		return value
+	}
+	return key
+}
+
+func (s *Shift) retrieveString(key string) string {
+	if value, ok := s.variables.GetString(key); ok {
+		return value
+	}
+	return key
+}
+
+func extractValue(source, path map[string]interface{}) (map[string]interface{}, interface{}) {
 	var resultPath interface{}
 	for k, v := range path {
 		switch value := v.(type) {
@@ -95,7 +117,7 @@ func getValue(source, path map[string]interface{}) (map[string]interface{}, inte
 
 			m, ok := value[index].(map[string]interface{})
 			if ok {
-				sourceArr[index], resultPath = getValue(sourceArr[index].(map[string]interface{}), m)
+				sourceArr[index], resultPath = extractValue(sourceArr[index].(map[string]interface{}), m)
 				source[k] = sourceArr
 				break
 			}
@@ -115,101 +137,12 @@ func getValue(source, path map[string]interface{}) (map[string]interface{}, inte
 			if !ok {
 				break
 			}
-			source[k], resultPath = getValue(sourceMap, value)
+			source[k], resultPath = extractValue(sourceMap, value)
+		case nil:
+			source[k] = nil
 		}
 	}
 	return source, resultPath
-}
-
-func mergeMaps(source, appendix map[string]interface{}) map[string]interface{} {
-	for k, v := range appendix {
-		switch value := v.(type) {
-		case float64, bool, string:
-			source[k] = value
-		case []interface{}:
-			sourceArr, ok := source[k].([]interface{})
-			if !ok {
-				source[k] = value
-				return source
-			}
-			resArrLen := len(sourceArr)
-			if len(value) > resArrLen {
-				resArrLen = len(value)
-			}
-			resArr := make([]interface{}, resArrLen, resArrLen)
-			for i := range resArr {
-				if i < len(value) && value[i] != nil {
-					resArr[i] = value[i]
-					continue
-				}
-				if i < len(sourceArr) {
-					resArr[i] = sourceArr[i]
-				}
-			}
-			source[k] = resArr
-		case map[string]interface{}:
-			m, ok := source[k].(map[string]interface{})
-			if !ok {
-				m = make(map[string]interface{})
-			}
-			source[k] = mergeMaps(m, value)
-		}
-	}
-	return source
-}
-
-func sliceToMap(path []string, value interface{}) map[string]interface{} {
-	var array bool
-	var index int
-	i := strings.Index(path[0], "[")
-	if i > -1 && len(path[0]) > i+1 {
-		indexStr := path[0][i+1 : len(path[0])-1]
-		indexInt, err := strconv.Atoi(indexStr)
-		if err == nil {
-			index = indexInt
-			array = true
-			path[0] = path[0][:i]
-		}
-	}
-
-	if len(path) == 1 {
-		if !array {
-			return map[string]interface{}{
-				path[0]: value,
-			}
-		}
-		arr := make([]interface{}, index+1, index+1)
-		arr[index] = value
-		return map[string]interface{}{
-			path[0]: arr,
-		}
-	}
-
-	key := path[0]
-	path = path[1:]
-	m := sliceToMap(path, value)
-	if !array {
-		return map[string]interface{}{
-			key: m,
-		}
-	}
-	arr := make([]interface{}, index+1, index+1)
-	arr[index] = m
-	return map[string]interface{}{
-		key: arr,
-	}
-}
-
-func tryConvert(value string) interface{} {
-	b, err := strconv.ParseBool(value)
-	if err == nil {
-		return b
-	}
-	f, err := strconv.ParseFloat(value, 64)
-	if err == nil {
-		return f
-	}
-	return value
 }
 
 func equal(a, b interface{}) bool {

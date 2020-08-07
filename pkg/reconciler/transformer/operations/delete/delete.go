@@ -6,9 +6,10 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/store/storage"
+	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/common/storage"
 )
 
+// Delete object implements Transformer interface.
 type Delete struct {
 	Path  string
 	Value string
@@ -16,16 +17,21 @@ type Delete struct {
 	variables *storage.Storage
 }
 
+// OperationName is used to identify this transformation.
 var OperationName string = "delete"
 
+// Register adds this transformation to the map which will
+// be used to create Transformation pipeline.
 func Register(m map[string]interface{}) {
 	m[OperationName] = &Delete{}
 }
 
+// InjectVars sets a shared Storage with Pipeline variables.
 func (d *Delete) InjectVars(storage *storage.Storage) {
 	d.variables = storage
 }
 
+// New returns a new instance of Delete object.
 func (d *Delete) New(key, value string) interface{} {
 	return &Delete{
 		Path:  key,
@@ -35,7 +41,12 @@ func (d *Delete) New(key, value string) interface{} {
 	}
 }
 
+// Apply is a main method of Transformation that removed any type of
+// variables from existing JSON.
 func (d *Delete) Apply(data []byte) ([]byte, error) {
+	d.Path = d.retrieveString(d.Path)
+	d.Value = d.retrieveString(d.Value)
+
 	result, err := d.parse(data, "", "")
 	if err != nil {
 		return data, err
@@ -47,6 +58,13 @@ func (d *Delete) Apply(data []byte) ([]byte, error) {
 	}
 
 	return output, nil
+}
+
+func (d *Delete) retrieveString(key string) string {
+	if value, ok := d.variables.GetString(key); ok {
+		return value
+	}
+	return key
 }
 
 func (d *Delete) parse(data interface{}, key, path string) (interface{}, error) {
@@ -87,7 +105,7 @@ func (d *Delete) parse(data interface{}, key, path string) (interface{}, error) 
 			output[k] = o
 		}
 	case nil:
-		output[key] = nil
+		output = nil
 	default:
 		log.Printf("unhandled type %T\n", value)
 	}

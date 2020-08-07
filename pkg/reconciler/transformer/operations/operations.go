@@ -3,19 +3,22 @@ package operations
 import (
 	"log"
 
+	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/common/storage"
 	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/add"
 	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/delete"
 	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/shift"
 	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/store"
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/store/storage"
 )
 
+// Transformer is an interface that contains common methods
+// to work with JSON data.
 type Transformer interface {
 	New(string, string) interface{}
 	Apply([]byte) ([]byte, error)
 	InjectVars(*storage.Storage)
 }
 
+// Register loads available Transformation into a named map.
 func Register() map[string]Transformer {
 	m := make(map[string]interface{})
 
