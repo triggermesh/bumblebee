@@ -11,12 +11,7 @@ import (
 )
 
 type Pipeline struct {
-	Transformers []Transformer
-}
-
-type Transformer interface {
-	New(string, string) interface{}
-	Apply([]byte) ([]byte, error)
+	Transformers []operations.Transformer
 }
 
 type Transformation struct {
@@ -30,19 +25,18 @@ type kv struct {
 }
 
 func NewPipeline(transformations []v1alpha1.EventTransformation) (*Pipeline, error) {
-	availableOperations := operations.Register()
-	pipe := []Transformer{}
+	availableTransformers := operations.Register()
+	pipe := []operations.Transformer{}
 
 	for _, transformation := range transformations {
-		op, exist := availableOperations[transformation.Name]
+		operation, exist := availableTransformers[transformation.Name]
 		if !exist {
 			return nil, fmt.Errorf("transformation %q not found", transformation.Name)
 		}
-		operation := op.(Transformer)
 
 		for _, kv := range transformation.Paths {
 			tr := operation.New(kv.Key, kv.Value)
-			pipe = append(pipe, tr.(Transformer))
+			pipe = append(pipe, tr.(operations.Transformer))
 		}
 	}
 

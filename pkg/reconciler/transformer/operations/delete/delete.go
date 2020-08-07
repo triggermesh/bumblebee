@@ -5,28 +5,37 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+
+	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/store/storage"
 )
 
 type Delete struct {
 	Path  string
 	Value string
+
+	variables *storage.Storage
 }
 
 var OperationName string = "delete"
 
-func Register(m map[string]interface{}) map[string]interface{} {
-	m[OperationName] = Delete{}
-	return m
+func Register(m map[string]interface{}) {
+	m[OperationName] = &Delete{}
 }
 
-func (d Delete) New(key, value string) interface{} {
-	return Delete{
+func (d *Delete) InjectVars(storage *storage.Storage) {
+	d.variables = storage
+}
+
+func (d *Delete) New(key, value string) interface{} {
+	return &Delete{
 		Path:  key,
 		Value: value,
+
+		variables: d.variables,
 	}
 }
 
-func (d Delete) Apply(data []byte) ([]byte, error) {
+func (d *Delete) Apply(data []byte) ([]byte, error) {
 	result, err := d.parse(data, "", "")
 	if err != nil {
 		return data, err
@@ -40,7 +49,7 @@ func (d Delete) Apply(data []byte) ([]byte, error) {
 	return output, nil
 }
 
-func (d Delete) parse(data interface{}, key, path string) (interface{}, error) {
+func (d *Delete) parse(data interface{}, key, path string) (interface{}, error) {
 	output := make(map[string]interface{})
 	switch value := data.(type) {
 	case []byte:
@@ -86,7 +95,7 @@ func (d Delete) parse(data interface{}, key, path string) (interface{}, error) {
 	return output, nil
 }
 
-func (d Delete) filter(path string, value interface{}) bool {
+func (d *Delete) filter(path string, value interface{}) bool {
 	switch {
 	case d.Path != "" && d.Value != "":
 		return d.filterPathAndValue(path, value)
@@ -98,11 +107,11 @@ func (d Delete) filter(path string, value interface{}) bool {
 	return false
 }
 
-func (d Delete) filterPath(path string) bool {
+func (d *Delete) filterPath(path string) bool {
 	return "."+d.Path == path
 }
 
-func (d Delete) filterValue(value interface{}) bool {
+func (d *Delete) filterValue(value interface{}) bool {
 	switch v := value.(type) {
 	case string:
 		return v == d.Value
@@ -114,6 +123,6 @@ func (d Delete) filterValue(value interface{}) bool {
 	return false
 }
 
-func (d Delete) filterPathAndValue(path string, value interface{}) bool {
+func (d *Delete) filterPathAndValue(path string, value interface{}) bool {
 	return d.filterPath(path) && d.filterValue(value)
 }

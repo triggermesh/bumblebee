@@ -287,17 +287,28 @@ spec:
   #   # new key in existing array
   #   - key: commits[1].TRIGGERMESH
   #     value: "123341"
-  - name: shift
+  # - name: shift
+  #   paths:
+  #     # key rename
+  #   - key: ref:NEWREF
+  #     # key rename with value filter
+  #   - key: ref:none
+  #     value: wronstring
+  #     # object rename
+  #   - key: sender:NEWSENDER
+  #     # move to the new key
+  #   - key: commits[0].id:newCommits[1].NEWID
+  #     # move array item
+  #   - key: head_commit.modified[0]:NEWMOD
+  - name: store
     paths:
-      # key rename
-    - key: ref:NEWREF
-      # key rename with value filter
-    - key: ref:none
-      value: wronstring
-      # object rename
-    - key: sender:NEWSENDER
-      # move to the new key
-    - key: commits[0].id:newCommits[1].NEWID
-      # move array item
-    - key: head_commit.modified[0]:NEWMOD
+    - key: $commitID
+      value: commits[0].id
+  - name: delete
+    paths:
+    - key: commits
+  - name: add
+    paths:
+    - key: COMMITID
+      value: $commitID
   targetType: ce.after.transformation

@@ -4,29 +4,38 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
+
+	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/store/storage"
 )
 
 type Add struct {
 	Path  string
 	Value string
+
+	variables *storage.Storage
 }
 
 var OperationName string = "add"
 
-func Register(m map[string]interface{}) map[string]interface{} {
-	m[OperationName] = Add{}
-	return m
+func Register(m map[string]interface{}) {
+	m[OperationName] = &Add{}
 }
 
-func (a Add) New(key, value string) interface{} {
-	return Add{
+func (a *Add) InjectVars(storage *storage.Storage) {
+	a.variables = storage
+}
+
+func (a *Add) New(key, value string) interface{} {
+	return &Add{
 		Path:  key,
 		Value: value,
+
+		variables: a.variables,
 	}
 }
 
-func (a Add) Apply(data []byte) ([]byte, error) {
-	input := sliceToMap(strings.Split(a.Path, "."), a.Value)
+func (a *Add) Apply(data []byte) ([]byte, error) {
+	input := sliceToMap(strings.Split(a.Path, "."), a.checkVars(a.Value))
 	event := make(map[string]interface{})
 	if err := json.Unmarshal(data, &event); err != nil {
 		return data, err
@@ -39,6 +48,13 @@ func (a Add) Apply(data []byte) ([]byte, error) {
 	}
 
 	return output, nil
+}
+
+func (a *Add) checkVars(key string) interface{} {
+	if value := a.variables.Get(key); value != nil {
+		return value
+	}
+	return key
 }
 
 func mergeMaps(source, appendix map[string]interface{}) map[string]interface{} {
@@ -78,7 +94,7 @@ func mergeMaps(source, appendix map[string]interface{}) map[string]interface{} {
 	return source
 }
 
-func sliceToMap(path []string, value string) map[string]interface{} {
+func sliceToMap(path []string, value interface{}) map[string]interface{} {
 	var array bool
 	var index int
 	i := strings.Index(path[0], "[")
@@ -120,14 +136,17 @@ func sliceToMap(path []string, value string) map[string]interface{} {
 	}
 }
 
-func tryConvert(value string) interface{} {
-	b, err := strconv.ParseBool(value)
-	if err == nil {
-		return b
-	}
-	f, err := strconv.ParseFloat(value, 64)
-	if err == nil {
-		return f
+func tryConvert(value interface{}) interface{} {
+	switch v := value.(type) {
+	case string:
+		b, err := strconv.ParseBool(v)
+		if err == nil {
+			return b
+		}
+		f, err := strconv.ParseFloat(v, 64)
+		if err == nil {
+			return f
+		}
 	}
 	return value
 }

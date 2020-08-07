@@ -4,37 +4,46 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
+
+	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/store/storage"
 )
 
 type Shift struct {
 	Path    string
 	NewPath string
 	Value   string
+
+	variables *storage.Storage
 }
 
 const delimeter string = ":"
 
 var OperationName string = "shift"
 
-func Register(m map[string]interface{}) map[string]interface{} {
-	m[OperationName] = Shift{}
-	return m
+func Register(m map[string]interface{}) {
+	m[OperationName] = &Shift{}
 }
 
-func (s Shift) New(key, value string) interface{} {
+func (s *Shift) InjectVars(storage *storage.Storage) {
+	s.variables = storage
+}
+
+func (s *Shift) New(key, value string) interface{} {
 	// doubtful scheme, review needed
 	keys := strings.Split(key, delimeter)
 	if len(keys) != 2 {
 		return nil
 	}
-	return Shift{
+	return &Shift{
 		Path:    keys[0],
 		NewPath: keys[1],
 		Value:   value,
+
+		variables: s.variables,
 	}
 }
 
-func (s Shift) Apply(data []byte) ([]byte, error) {
+func (s *Shift) Apply(data []byte) ([]byte, error) {
 	oldPath := sliceToMap(strings.Split(s.Path, "."), "")
 
 	event := make(map[string]interface{})
