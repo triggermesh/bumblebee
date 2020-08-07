@@ -300,13 +300,18 @@ spec:
   #   - key: commits[0].id:newCommits[1].NEWID
   #     # move array item
   #   - key: head_commit.modified[0]:NEWMOD
+  # 
+  #
+  # store field from commits list in commitID variable  
   - name: store
     paths:
     - key: $commitID
       value: commits[0].id
+  # remove commits list 
   - name: delete
     paths:
     - key: commits
+  # add stored commitID as a new key 
   - name: add
     paths:
     - key: COMMITID
