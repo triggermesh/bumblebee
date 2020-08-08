@@ -1,0 +1,73 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Transformation
+metadata:
+  name: demo
+spec:
+  context:
+  - name: add
+    paths:
+    # set CE type 
+    - key: type
+      value: ce.after.transformation
+  - name: store
+    paths:
+    # store CE source as a variable to pass it into CE data
+    - key: $ceSource
+      value: source
+  data:
+  - name: delete
+    paths:
+    # remove key if value is equal
+    - key: commits[0].author.name
+      value: Timur Zununbekov
+    # remove key
+    - key: compare
+    # remove everyhing with this value
+    - value: f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa
+  - name: add
+    paths:
+    # add new key
+    - key: HELLO
+      value: WORLD
+    # add new key to existing object
+    - key: installation.TRIGGERMESH
+      value: "42"
+    # add new object
+    - key: TRIGGERMESH.cloud
+      value: "true"
+    # add new array
+    - key: NEWOBJECT.ARRAY[2]
+      value: "Hey!"
+    # add new key in existing array
+    - key: commits[1].NEWKEY
+      value: "1337"
+    # add sored value from CE context 
+    - key: ceSource
+      value: $ceSource
+  - name: shift
+    paths:
+    # key rename
+    - key: ref:NEWREF
+    # key rename with value filter
+    - key: ref:none
+      value: wronstring
+    # object rename
+    - key: sender:NEWSENDER
+    # move nested value to the new path
+    - key: commits[0].id:newCommits[1].NEWID
+    # move array item
+    - key: head_commit.modified[0]:NEWMOD
+  - name: store
+    paths:
+    # store field from repository object in $reponame variable  
+    - key: $reponame
+      value: repository.name
+  - name: delete
+    paths:
+    # remove repository object 
+    - key: repository
+  - name: add
+    paths:
+    # add stored repository name as a new key 
+    - key: repository
+      value: $reponame

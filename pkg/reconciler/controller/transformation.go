@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package transformation
+package controller
 
 import (
 	"context"
@@ -37,7 +37,7 @@ import (
 
 	transformationv1alpha1 "github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
 	transformationreconciler "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/reconciler/transformation/v1alpha1/transformation"
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformation/resources"
+	"github.com/triggermesh/transformation-prototype/pkg/reconciler/controller/resources"
 )
 
 const (
@@ -96,7 +96,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, t *transformationv1alpha
 func (r *Reconciler) reconcile(ctx context.Context, t *transformationv1alpha1.Transformation) error {
 	logger := logging.FromContext(ctx)
 
-	trn, err := json.Marshal(t.Spec.Transformations)
+	trn, err := json.Marshal(t.Spec)
 	if err != nil {
 		logger.Errorf("Cannot encode transformation spec: %v", err)
 		return nil
@@ -107,7 +107,7 @@ func (r *Reconciler) reconcile(ctx context.Context, t *transformationv1alpha1.Tr
 		svc = resources.NewKnService(t.Namespace, t.Name,
 			resources.Image(r.transformerImage),
 			resources.EnvVar(envVarName, string(trn)),
-			// resources.KsvcLabelVisibilityClusterLocal(),
+			resources.KsvcLabelVisibilityClusterLocal(),
 			resources.Owner(t),
 		)
 		_, err := r.servingClientSet.ServingV1().Services(t.Namespace).Create(svc)

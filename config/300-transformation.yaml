@@ -43,21 +43,38 @@ spec:
           spec:
             type: object
             properties:
-              events:
+              context:
                 type: array
                 items: 
                   type: object
                   properties:
-                    ceType:
+                    name:
                       type: string
-                    targetType:
+                    paths:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          key:
+                            type: string
+                          value:
+                            type: string
+              data:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    name:
                       type: string
-                    transform:
-                      type: string
-                  required:
-                  - transform
-            required: 
-            - events
+                    paths:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          key:
+                            type: string
+                          value:
+                            type: string
           status:
             type: object
             properties:

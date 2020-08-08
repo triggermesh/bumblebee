@@ -1,0 +1,191 @@
+apiVersion: sources.knative.dev/v1alpha2
+kind: PingSource
+metadata:
+  name: ping-source
+spec:
+  schedule: "*/1 * * * *"
+  jsonData: '{
+    "ref": "refs/heads/master",
+    "before": "9e2f769aab5230d4019cf4fbaf9fd9ca49bd1755",
+    "after": "f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa",
+    "created": false,
+    "deleted": false,
+    "forced": false,
+    "base_ref": null,
+    "compare": "https://github.com/tzununbekov/foo/compare/9e2f769aab52...f056c91be9c9",
+    "commits": [
+      {
+        "sha": "",
+        "id": "f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa",
+        "node_id": "",
+        "tree_id": "b762495a8a62fe03f4bdd93dbad3bd4ed2a6ff28",
+        "distinct": true,
+        "message": "Update README.md",
+        "timestamp": "2020-08-04T16:43:10+06:00",
+        "url": "https://github.com/tzununbekov/foo/commit/f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa",
+        "author": {
+          "name": "Timur Zununbekov",
+          "email": "t.zununbekov@gmail.com",
+          "username": "tzununbekov"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@github.com",
+          "username": "web-flow"
+        },
+        "added": [],
+        "removed": [],
+        "modified": [
+          "README.md"
+        ]
+      }
+    ],
+    "head_commit": {
+      "id": "f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa",
+      "node_id": "",
+      "tree_id": "b762495a8a62fe03f4bdd93dbad3bd4ed2a6ff28",
+      "distinct": true,
+      "message": "Update README.md",
+      "timestamp": "2020-08-04T16:43:10+06:00",
+      "url": "https://github.com/tzununbekov/foo/commit/f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa",
+      "author": {
+        "name": "Timur Zununbekov",
+        "email": "t.zununbekov@gmail.com",
+        "username": "tzununbekov"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com",
+        "username": "web-flow"
+      },
+      "added": [],
+      "removed": [],
+      "modified": [
+        "README.md",
+        "somethingelse"
+      ]
+    },
+    "repository": {
+      "id": 208092589,
+      "node_id": "MDEwOlJlcG9zaXRvcnkyMDgwOTI1ODk=",
+      "name": "foo",
+      "full_name": "tzununbekov/foo",
+      "owner": {
+        "login": "tzununbekov",
+        "id": 13515865,
+        "node_id": "MDQ6VXNlcjEzNTE1ODY1",
+        "avatar_url": "https://avatars3.githubusercontent.com/u/13515865?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/tzununbekov",
+        "html_url": "https://github.com/tzununbekov",
+        "followers_url": "https://api.github.com/users/tzununbekov/followers",
+        "following_url": "https://api.github.com/users/tzununbekov/following{/other_user}",
+        "gists_url": "https://api.github.com/users/tzununbekov/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/tzununbekov/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/tzununbekov/subscriptions",
+        "organizations_url": "https://api.github.com/users/tzununbekov/orgs",
+        "repos_url": "https://api.github.com/users/tzununbekov/repos",
+        "events_url": "https://api.github.com/users/tzununbekov/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/tzununbekov/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "private": true,
+      "html_url": "https://github.com/tzununbekov/foo",
+      "description": "",
+      "fork": false,
+      "url": "https://github.com/tzununbekov/foo",
+      "forks_url": "https://api.github.com/repos/tzununbekov/foo/forks",
+      "keys_url": "https://api.github.com/repos/tzununbekov/foo/keys{/key_id}",
+      "collaborators_url": "https://api.github.com/repos/tzununbekov/foo/collaborators{/collaborator}",
+      "teams_url": "https://api.github.com/repos/tzununbekov/foo/teams",
+      "hooks_url": "https://api.github.com/repos/tzununbekov/foo/hooks",
+      "issue_events_url": "https://api.github.com/repos/tzununbekov/foo/issues/events{/number}",
+      "events_url": "https://api.github.com/repos/tzununbekov/foo/events",
+      "assignees_url": "https://api.github.com/repos/tzununbekov/foo/assignees{/user}",
+      "branches_url": "https://api.github.com/repos/tzununbekov/foo/branches{/branch}",
+      "tags_url": "https://api.github.com/repos/tzununbekov/foo/tags",
+      "blobs_url": "https://api.github.com/repos/tzununbekov/foo/git/blobs{/sha}",
+      "git_tags_url": "https://api.github.com/repos/tzununbekov/foo/git/tags{/sha}",
+      "git_refs_url": "https://api.github.com/repos/tzununbekov/foo/git/refs{/sha}",
+      "trees_url": "https://api.github.com/repos/tzununbekov/foo/git/trees{/sha}",
+      "statuses_url": "https://api.github.com/repos/tzununbekov/foo/statuses/{sha}",
+      "languages_url": "https://api.github.com/repos/tzununbekov/foo/languages",
+      "stargazers_url": "https://api.github.com/repos/tzununbekov/foo/stargazers",
+      "contributors_url": "https://api.github.com/repos/tzununbekov/foo/contributors",
+      "subscribers_url": "https://api.github.com/repos/tzununbekov/foo/subscribers",
+      "subscription_url": "https://api.github.com/repos/tzununbekov/foo/subscription",
+      "commits_url": "https://api.github.com/repos/tzununbekov/foo/commits{/sha}",
+      "git_commits_url": "https://api.github.com/repos/tzununbekov/foo/git/commits{/sha}",
+      "comments_url": "https://api.github.com/repos/tzununbekov/foo/comments{/number}",
+      "issue_comment_url": "https://api.github.com/repos/tzununbekov/foo/issues/comments{/number}",
+      "contents_url": "https://api.github.com/repos/tzununbekov/foo/contents/{+path}",
+      "compare_url": "https://api.github.com/repos/tzununbekov/foo/compare/{base}...{head}",
+      "merges_url": "https://api.github.com/repos/tzununbekov/foo/merges",
+      "archive_url": "https://api.github.com/repos/tzununbekov/foo/{archive_format}{/ref}",
+      "downloads_url": "https://api.github.com/repos/tzununbekov/foo/downloads",
+      "issues_url": "https://api.github.com/repos/tzununbekov/foo/issues{/number}",
+      "pulls_url": "https://api.github.com/repos/tzununbekov/foo/pulls{/number}",
+      "milestones_url": "https://api.github.com/repos/tzununbekov/foo/milestones{/number}",
+      "notifications_url": "https://api.github.com/repos/tzununbekov/foo/notifications{?since,all,participating}",
+      "labels_url": "https://api.github.com/repos/tzununbekov/foo/labels{/name}",
+      "releases_url": "https://api.github.com/repos/tzununbekov/foo/releases{/id}",
+      "created_at": 1568304748,
+      "updated_at": "2020-07-16T13:38:35Z",
+      "pushed_at": 1596537791,
+      "git_url": "git://github.com/tzununbekov/foo.git",
+      "ssh_url": "git@github.com:tzununbekov/foo.git",
+      "clone_url": "https://github.com/tzununbekov/foo.git",
+      "svn_url": "https://github.com/tzununbekov/foo",
+      "homepage": null,
+      "size": 52,
+      "stargazers_count": 0,
+      "watchers_count": 0,
+      "language": "Python",
+      "has_issues": true,
+      "has_downloads": true,
+      "has_wiki": true,
+      "has_pages": false,
+      "forks_count": 0,
+      "mirror_url": null,
+      "open_issues_count": 2,
+      "forks": 0,
+      "open_issues": 2,
+      "watchers": 0,
+      "default_branch": "master",
+      "stargazers": 0,
+      "master_branch": "master"
+    },
+    "pusher": {
+      "name": "tzununbekov",
+      "email": "t.zununbekov@gmail.com"
+    },
+    "sender": {
+      "login": "tzununbekov",
+      "id": 13515865,
+      "node_id": "MDQ6VXNlcjEzNTE1ODY1",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/13515865?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/tzununbekov",
+      "html_url": "https://github.com/tzununbekov",
+      "followers_url": "https://api.github.com/users/tzununbekov/followers",
+      "following_url": "https://api.github.com/users/tzununbekov/following{/other_user}",
+      "gists_url": "https://api.github.com/users/tzununbekov/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/tzununbekov/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/tzununbekov/subscriptions",
+      "organizations_url": "https://api.github.com/users/tzununbekov/orgs",
+      "repos_url": "https://api.github.com/users/tzununbekov/repos",
+      "events_url": "https://api.github.com/users/tzununbekov/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/tzununbekov/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "installation": {
+      "id": 0
+    }
+  }'
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1beta1
+      kind: Broker
+      name: transformation-demo
