@@ -260,7 +260,16 @@ kind: Transformation
 metadata:
   name: demo
 spec:
-  transformations:
+  context:
+  - name: add
+    paths:
+    - key: type
+      value: ce.after.transformation
+  - name: store
+    paths:
+    - key: $ceSource
+      value: source
+  data:
   - name: delete
     paths:
       # remove key if value is equal
@@ -303,15 +312,18 @@ spec:
   # store field from commits list in commitID variable  
   - name: store
     paths:
-    - key: $commitID
-      value: commits[0].id
+    - key: $reponame
+      value: repository.name
   # remove commits list 
   - name: delete
     paths:
-    - key: commits
+    - key: repository
   # add stored commitID as a new key 
   - name: add
     paths:
-    - key: COMMITID
-      value: $commitID
-  targetType: ce.after.transformation
+    - key: repository
+      value: $reponame
+  - name: add
+    paths:
+    - key: ceSource
+      value: $ceSource

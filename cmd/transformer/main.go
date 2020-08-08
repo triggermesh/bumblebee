@@ -36,10 +36,10 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	pipeline, err := transformer.NewPipeline(transformations.Transformations)
+	transformer, err := transformer.NewTransformer(transformations.Context, transformations.Data)
 	if err != nil {
 		log.Fatalf("cannot create transformation pipeline: %v", err)
 	}
 
-	pipeline.Start(ctx, ceClient)
+	transformer.Start(ctx, ceClient)
 }

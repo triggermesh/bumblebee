@@ -43,7 +43,7 @@ spec:
           spec:
             type: object
             properties:
-              transformations:
+              context:
                 type: array
                 items: 
                   type: object
@@ -59,10 +59,22 @@ spec:
                             type: string
                           value:
                             type: string
-              targetType:
-                type: string
-            required: 
-            - transformations
+              data:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    paths:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          key:
+                            type: string
+                          value:
+                            type: string
           status:
             type: object
             properties:
