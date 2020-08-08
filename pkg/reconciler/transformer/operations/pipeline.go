@@ -17,7 +17,8 @@ import (
 type Transformer interface {
 	New(string, string) interface{}
 	Apply([]byte) ([]byte, error)
-	InjectVars(*storage.Storage)
+	SetStorage(*storage.Storage)
+	InitStep() bool
 }
 
 // Pipeline is a set of Transformations that are
@@ -69,10 +70,20 @@ func New(transformations []v1alpha1.Transform) (*Pipeline, error) {
 	}, nil
 }
 
-// InjectVars injects shared storage with Pipeline vars.
-func (p *Pipeline) InjectVars(s *storage.Storage) {
+// SetStorage injects shared storage with Pipeline vars.
+func (p *Pipeline) SetStorage(s *storage.Storage) {
 	for _, v := range p.Transformers {
-		v.InjectVars(s)
+		v.SetStorage(s)
+	}
+}
+
+// InitStep runs Transformations that are marked as InitStep.
+func (p *Pipeline) InitStep(data []byte) {
+	for _, v := range p.Transformers {
+		if !v.InitStep() {
+			continue
+		}
+		v.Apply(data)
 	}
 }
 
@@ -80,6 +91,9 @@ func (p *Pipeline) InjectVars(s *storage.Storage) {
 func (p *Pipeline) Apply(data []byte) ([]byte, error) {
 	var err error
 	for _, v := range p.Transformers {
+		if v.InitStep() {
+			continue
+		}
 		data, err = v.Apply(data)
 		if err != nil {
 			return data, err

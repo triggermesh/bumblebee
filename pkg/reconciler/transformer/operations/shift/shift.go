@@ -19,18 +19,29 @@ type Shift struct {
 
 const delimeter string = ":"
 
-// OperationName is used to identify this transformation.
-var OperationName string = "shift"
+// runFirst is used to figure out if this operation should
+// run before main Transformations. For example, Store
+// operation needs to run first to load all Pipeline variables.
+var runFirst bool = false
+
+// operationName is used to identify this transformation.
+var operationName string = "shift"
 
 // Register adds this transformation to the map which will
 // be used to create Transformation pipeline.
 func Register(m map[string]interface{}) {
-	m[OperationName] = &Shift{}
+	m[operationName] = &Shift{}
 }
 
-// InjectVars sets a shared Storage with Pipeline variables.
-func (s *Shift) InjectVars(storage *storage.Storage) {
+// SetStorage sets a shared Storage with Pipeline variables.
+func (s *Shift) SetStorage(storage *storage.Storage) {
 	s.variables = storage
+}
+
+// InitStep returns "true" if this Transformation should run
+// as init step.
+func (s *Shift) InitStep() bool {
+	return runFirst
 }
 
 // New returns a new instance of Shift object.

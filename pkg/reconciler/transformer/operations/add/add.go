@@ -16,18 +16,29 @@ type Add struct {
 	variables *storage.Storage
 }
 
-// OperationName is used to identify this transformation.
-var OperationName string = "add"
+// runFirst is used to figure out if this operation should
+// run before main Transformations. For example, Store
+// operation needs to run first to load all Pipeline variables.
+var runFirst bool = false
+
+// operationName is used to identify this transformation.
+var operationName string = "add"
 
 // Register adds this transformation to the map which will
 // be used to create Transformation pipeline.
 func Register(m map[string]interface{}) {
-	m[OperationName] = &Add{}
+	m[operationName] = &Add{}
 }
 
-// InjectVars sets a shared Storage with Pipeline variables.
-func (a *Add) InjectVars(storage *storage.Storage) {
+// SetStorage sets a shared Storage with Pipeline variables.
+func (a *Add) SetStorage(storage *storage.Storage) {
 	a.variables = storage
+}
+
+// InitStep returns "true" if this Transformation should run
+// as init step.
+func (a *Add) InitStep() bool {
+	return runFirst
 }
 
 // New returns a new instance of Add object.

@@ -9,6 +9,8 @@ spec:
     # set CE type 
     - key: type
       value: ce.after.transformation
+    - key: id
+      value: $commitID
   - name: store
     paths:
     # store CE source as a variable to pass it into CE data
@@ -54,7 +56,7 @@ spec:
     # object rename
     - key: sender:NEWSENDER
     # move nested value to the new path
-    - key: commits[0].id:newCommits[1].NEWID
+    - key: commits[0].tree_id:newCommits[1].NEWID
     # move array item
     - key: head_commit.modified[0]:NEWMOD
   - name: store
@@ -62,6 +64,8 @@ spec:
     # store field from repository object in $reponame variable  
     - key: $reponame
       value: repository.name
+    - key: $commitID
+      value: head_commit.tree_id
   - name: delete
     paths:
     # remove repository object 

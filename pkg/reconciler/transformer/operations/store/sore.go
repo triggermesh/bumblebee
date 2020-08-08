@@ -16,18 +16,29 @@ type Store struct {
 	variables *storage.Storage
 }
 
-// OperationName is used to identify this transformation.
-var OperationName string = "store"
+// runFirst is used to figure out if this operation should
+// run before main Transformations. For example, Store
+// operation needs to run first to load all Pipeline variables.
+var runFirst bool = true
+
+// operationName is used to identify this transformation.
+var operationName string = "store"
 
 // Register adds this transformation to the map which will
 // be used to create Transformation pipeline.
 func Register(m map[string]interface{}) {
-	m[OperationName] = &Store{}
+	m[operationName] = &Store{}
 }
 
-// InjectVars sets a shared Storage with Pipeline variables.
-func (s *Store) InjectVars(storage *storage.Storage) {
+// SetStorage sets a shared Storage with Pipeline variables.
+func (s *Store) SetStorage(storage *storage.Storage) {
 	s.variables = storage
+}
+
+// InitStep returns "true" if this Transformation should run
+// as init step.
+func (s *Store) InitStep() bool {
+	return runFirst
 }
 
 // New returns a new instance of Store object.

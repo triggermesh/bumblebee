@@ -31,8 +31,8 @@ func NewTransformer(context, data []v1alpha1.Transform) (Transformer, error) {
 	}
 
 	sharedVars := storage.New()
-	contextPipeline.InjectVars(sharedVars)
-	dataPipeline.InjectVars(sharedVars)
+	contextPipeline.SetStorage(sharedVars)
+	dataPipeline.SetStorage(sharedVars)
 
 	return Transformer{
 		ContextPipeline: contextPipeline,
@@ -53,12 +53,16 @@ func (t *Transformer) receiveAndTransform(ctx context.Context, event cloudevents
 	}
 	log.Printf("Received %q event\n", event.Type())
 
-	// CE Context transformation
 	contextCE, err := json.Marshal(event.Context)
 	if err != nil {
 		return &event, fmt.Errorf("Cannot encode CE context: %v", err)
-
 	}
+
+	// Run init step such as load Pipeline variables first
+	t.ContextPipeline.InitStep(contextCE)
+	t.DataPipeline.InitStep(event.Data())
+
+	// CE Context transformation
 	contextCE, err = t.ContextPipeline.Apply(contextCE)
 	if err != nil {
 		return &event, fmt.Errorf("Cannot apply transformation on CE context: %v", err)

@@ -17,18 +17,29 @@ type Delete struct {
 	variables *storage.Storage
 }
 
-// OperationName is used to identify this transformation.
-var OperationName string = "delete"
+// runFirst is used to figure out if this operation should
+// run before main Transformations. For example, Store
+// operation needs to run first to load all Pipeline variables.
+var runFirst bool = false
+
+// operationName is used to identify this transformation.
+var operationName string = "delete"
 
 // Register adds this transformation to the map which will
 // be used to create Transformation pipeline.
 func Register(m map[string]interface{}) {
-	m[OperationName] = &Delete{}
+	m[operationName] = &Delete{}
 }
 
-// InjectVars sets a shared Storage with Pipeline variables.
-func (d *Delete) InjectVars(storage *storage.Storage) {
+// SetStorage sets a shared Storage with Pipeline variables.
+func (d *Delete) SetStorage(storage *storage.Storage) {
 	d.variables = storage
+}
+
+// InitStep returns "true" if this Transformation should run
+// as init step.
+func (d *Delete) InitStep() bool {
+	return runFirst
 }
 
 // New returns a new instance of Delete object.

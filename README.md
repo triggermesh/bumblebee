@@ -57,7 +57,7 @@ spec
 
 Add new or override existing CE keys.
 
-Example 1
+Example 1.
 
 Override Cloud Event type. This operation can be used to implement
 complex Transformation logic with multiple Triggers and CE type
@@ -72,7 +72,7 @@ spec:
       value: ce.after.transformation
 ```
 
-Example 2
+Example 2.
 
 Create a new object with nested structure. Value "42" will be 
 converted to integer.
@@ -86,7 +86,7 @@ spec:
       value: "42"
 ```
 
-Example 3
+Example 3.
 
 Create arrays or modify existing ones. "True" value will be
 converted to boolean and added as a second item of a new array
