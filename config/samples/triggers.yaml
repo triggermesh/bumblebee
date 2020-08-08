@@ -1,0 +1,33 @@
+apiVersion: eventing.knative.dev/v1beta1
+kind: Trigger
+metadata:
+  name: trigger-transformation
+spec:
+  broker: transformation-demo
+  filter:
+    attributes:
+      type: dev.knative.sources.ping
+  subscriber:
+    ref:
+      apiVersion: flow.triggermesh.io/v1alpha1
+      kind: Transformation
+      name: demo
+      namespace: default
+
+---
+
+apiVersion: eventing.knative.dev/v1beta1
+kind: Trigger
+metadata:
+  name: trigger-eventdisplay
+spec:
+  broker: transformation-demo
+  filter: 
+    attributes:
+      type: ce.after.transformation
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: event-display
+      namespace: default
