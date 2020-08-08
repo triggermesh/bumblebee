@@ -6,12 +6,9 @@ require (
 	cloud.google.com/go v0.61.0 // indirect
 	github.com/aws/aws-sdk-go v1.31.12 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.1.0
-	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/google/go-cmp v0.5.1 // indirect
 	github.com/google/go-containerregistry v0.1.1 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/qntfy/jsonparser v1.0.2 // indirect
-	github.com/qntfy/kazaam v3.4.8+incompatible
 	go.uber.org/zap v1.14.1
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899 // indirect
 	golang.org/x/sys v0.0.0-20200720211630-cb9d2d5c5666 // indirect
