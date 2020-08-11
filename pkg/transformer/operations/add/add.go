@@ -18,6 +18,7 @@ package add
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/triggermesh/transformation-prototype/pkg/transformer/common/convert"
@@ -32,10 +33,10 @@ type Add struct {
 	variables *storage.Storage
 }
 
-// runFirst is used to figure out if this operation should
+// InitStep is used to figure out if this operation should
 // run before main Transformations. For example, Store
 // operation needs to run first to load all Pipeline variables.
-var runFirst bool = false
+var InitStep bool = false
 
 // operationName is used to identify this transformation.
 var operationName string = "add"
@@ -54,7 +55,7 @@ func (a *Add) SetStorage(storage *storage.Storage) {
 // InitStep returns "true" if this Transformation should run
 // as init step.
 func (a *Add) InitStep() bool {
-	return runFirst
+	return InitStep
 }
 
 // New returns a new instance of Add object.
@@ -70,14 +71,14 @@ func (a *Add) New(key, value string) interface{} {
 // Apply is a main method of Transformation that adds any type of
 // variables into existing JSON.
 func (a *Add) Apply(data []byte) ([]byte, error) {
-	input := convert.SliceToMap(strings.Split(a.retrieveString(a.Path), "."), a.retrieveInterface(a.Value))
+	input := convert.SliceToMap(strings.Split(a.retrieveString(a.Path), "."), a.composeValue())
 	event := make(map[string]interface{})
 	if err := json.Unmarshal(data, &event); err != nil {
 		return data, err
 	}
 
 	result := convert.MergeMaps(event, input)
-	output, err := json.MarshalIndent(result, "", "  ")
+	output, err := json.Marshal(result)
 	if err != nil {
 		return data, err
 	}
@@ -92,9 +93,14 @@ func (a *Add) retrieveString(key string) string {
 	return key
 }
 
-func (a *Add) retrieveInterface(key string) interface{} {
-	if value := a.variables.Get(key); value != nil {
-		return value
+func (a *Add) composeValue() interface{} {
+	result := a.Value
+	for _, key := range a.variables.ListKeys() {
+		index := strings.Index(result, key)
+		if index == -1 {
+			continue
+		}
+		result = fmt.Sprintf("%s%s%s", result[:index], a.retrieveString(key), result[index+len(key):])
 	}
-	return key
+	return result
 }

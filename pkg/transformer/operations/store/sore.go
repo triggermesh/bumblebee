@@ -32,10 +32,10 @@ type Store struct {
 	variables *storage.Storage
 }
 
-// runFirst is used to figure out if this operation should
+// InitStep is used to figure out if this operation should
 // run before main Transformations. For example, Store
 // operation needs to run first to load all Pipeline variables.
-var runFirst bool = true
+var InitStep bool = true
 
 // operationName is used to identify this transformation.
 var operationName string = "store"
@@ -54,7 +54,7 @@ func (s *Store) SetStorage(storage *storage.Storage) {
 // InitStep returns "true" if this Transformation should run
 // as init step.
 func (s *Store) InitStep() bool {
-	return runFirst
+	return InitStep
 }
 
 // New returns a new instance of Store object.

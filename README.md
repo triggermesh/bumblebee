@@ -53,6 +53,19 @@ spec
     - value: leaked password
 ```
 
+Example 4.
+
+Delete everything. Useful for composing completely new CE
+using stored variables.
+
+```
+spec
+  data:
+  - name: delete
+    paths:
+    - key:
+```
+
 #### Add
 
 Add new or override existing CE keys.
@@ -103,6 +116,20 @@ spec:
       value: "true"
     - key: commits[1].newKey
       value: "1337"
+```
+
+Example 4.
+
+"Add" operation supports value composing from variables and
+static strings.
+
+```
+spec:
+  data:
+  - name: add
+    paths:
+    - key: id
+      value: ce-$source-$id 
 ```
 
 #### Shift

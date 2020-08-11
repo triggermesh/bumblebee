@@ -35,10 +35,10 @@ type Shift struct {
 
 const delimeter string = ":"
 
-// runFirst is used to figure out if this operation should
+// InitStep is used to figure out if this operation should
 // run before main Transformations. For example, Store
 // operation needs to run first to load all Pipeline variables.
-var runFirst bool = false
+var InitStep bool = false
 
 // operationName is used to identify this transformation.
 var operationName string = "shift"
@@ -57,7 +57,7 @@ func (s *Shift) SetStorage(storage *storage.Storage) {
 // InitStep returns "true" if this Transformation should run
 // as init step.
 func (s *Shift) InitStep() bool {
-	return runFirst
+	return InitStep
 }
 
 // New returns a new instance of Shift object.
@@ -96,7 +96,7 @@ func (s *Shift) Apply(data []byte) ([]byte, error) {
 	newPath := convert.SliceToMap(strings.Split(s.retrieveString(s.NewPath), "."), value)
 
 	result := convert.MergeMaps(newEvent, newPath)
-	output, err := json.MarshalIndent(result, "", "  ")
+	output, err := json.Marshal(result)
 	if err != nil {
 		return data, err
 	}

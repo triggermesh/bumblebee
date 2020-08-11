@@ -88,6 +88,9 @@ func MergeMaps(source, appendix map[string]interface{}) map[string]interface{} {
 	for k, v := range appendix {
 		switch value := v.(type) {
 		case float64, bool, string, nil:
+			if source == nil {
+				source = make(map[string]interface{})
+			}
 			source[k] = value
 		case []interface{}:
 			sourceArr, ok := source[k].([]interface{})

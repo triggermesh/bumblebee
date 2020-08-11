@@ -54,3 +54,14 @@ func (s *Storage) GetString(k string) (string, bool) {
 	str, ok := s.data[k].(string)
 	return str, ok
 }
+
+// ListKeys returns the slice of var keys stored in memory.
+func (s *Storage) ListKeys() []string {
+	s.mux.RLock()
+	defer s.mux.RUnlock()
+	list := []string{}
+	for k := range s.data {
+		list = append(list, k)
+	}
+	return list
+}
