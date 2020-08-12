@@ -18,7 +18,7 @@ metadata:
   name: transformation-controller-admin
 subjects:
   - kind: ServiceAccount
-    name: controller
+    name: transformation-controller
     namespace: transformation
 roleRef:
   kind: ClusterRole

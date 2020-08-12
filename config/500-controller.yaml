@@ -15,32 +15,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller
+  name: transformation-controller
   namespace: transformation
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: controller
+      app: transformation-controller
   template:
     metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
-        app: controller
+        app: transformation-controller
     spec:
-      serviceAccountName: controller
+      serviceAccountName: transformation-controller
       containers:
       - name: controller
-        # This is the Go import path for the binary that is containerized
-        # and substituted here.
-        image: ko://github.com/triggermesh/transformation-prototype/cmd/controller
+        image: ko://github.com/triggermesh/transformation-prototype/cmd/transformation-controller
         ports:
         - name: metrics
           containerPort: 9090
         env:
         - name: TRANSFORMER_IMAGE
-          value: ko://github.com/triggermesh/transformation-prototype/cmd/transformer
+          value: ko://github.com/triggermesh/transformation-prototype/cmd/transformation-adapter
         - name: SYSTEM_NAMESPACE
           valueFrom:
             fieldRef:
