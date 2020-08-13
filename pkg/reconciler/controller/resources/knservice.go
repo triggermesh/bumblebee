@@ -1,3 +1,19 @@
+/*
+Copyright (c) 2020 TriggerMesh Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package resources
 
 import (
@@ -39,9 +55,7 @@ func NewKnService(ns, name string, opts ...Option) *servingv1.Service {
 // Image sets a Container's image.
 func Image(img string) Option {
 	return func(svc *servingv1.Service) {
-		var image *string
-
-		image = &firstContainer(svc).Image
+		image := &firstContainer(svc).Image
 		*image = img
 	}
 }
@@ -84,9 +98,7 @@ func setEnvVar(envVars *[]corev1.EnvVar, name, value string, valueFrom *corev1.E
 // firstContainer returns a PodSpecable's first Container definition.
 // A new empty Container is injected if the PodSpecable does not contain any.
 func firstContainer(svc *servingv1.Service) *corev1.Container {
-	var containers *[]corev1.Container
-
-	containers = &svc.Spec.Template.Spec.Containers
+	containers := &svc.Spec.Template.Spec.Containers
 	if len(*containers) == 0 {
 		*containers = make([]corev1.Container, 1)
 	}
@@ -104,12 +116,9 @@ func KnServiceHasEnvVar(svc *servingv1.Service, name, value string) bool {
 	return false
 }
 
-// KnServiceImage return true id kn service image value equal to provided string.
+// KnServiceImage return true if kn service image value equal to provided string.
 func KnServiceImage(svc *servingv1.Service, image string) bool {
-	if svc.Spec.GetTemplate().Spec.GetContainer().Image != image {
-		return false
-	}
-	return true
+	return svc.Spec.GetTemplate().Spec.GetContainer().Image == image
 }
 
 // KsvcLabelVisibilityClusterLocal sets label to avoid exposing the service externally.
