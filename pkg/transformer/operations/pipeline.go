@@ -99,8 +99,7 @@ func (p *Pipeline) InitStep(data []byte) {
 		if !v.InitStep() {
 			continue
 		}
-		_, err := v.Apply(data)
-		if err != nil {
+		if _, err := v.Apply(data); err != nil {
 			log.Printf("Failed to apply Init step: %v", err)
 		}
 	}

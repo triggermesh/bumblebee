@@ -19,10 +19,6 @@ RUN BIN_OUTPUT_DIR=/bin make transformation-adapter && \
 
 FROM scratch
 
-# Emulate ko builds
-# https://github.com/google/ko/blob/v0.5.0/README.md#including-static-assets
-ENV KO_DATA_PATH /kodata
-
 COPY --from=builder /kodata/ ${KO_DATA_PATH}/
 COPY --from=builder /bin/transformation-adapter /
 COPY licenses/ /licenses/
