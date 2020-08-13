@@ -1,3 +1,19 @@
+/*
+Copyright (c) 2020 TriggerMesh Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package operations
 
 import (
@@ -5,11 +21,11 @@ import (
 	"log"
 
 	"github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/common/storage"
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/add"
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/delete"
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/shift"
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/transformer/operations/store"
+	"github.com/triggermesh/transformation-prototype/pkg/transformer/common/storage"
+	"github.com/triggermesh/transformation-prototype/pkg/transformer/operations/add"
+	"github.com/triggermesh/transformation-prototype/pkg/transformer/operations/delete"
+	"github.com/triggermesh/transformation-prototype/pkg/transformer/operations/shift"
+	"github.com/triggermesh/transformation-prototype/pkg/transformer/operations/store"
 )
 
 // Transformer is an interface that contains common methods
@@ -61,7 +77,7 @@ func New(transformations []v1alpha1.Transform) (*Pipeline, error) {
 		for _, kv := range transformation.Paths {
 			tr := operation.New(kv.Key, kv.Value)
 			p = append(p, tr.(Transformer))
-			log.Printf("%s: %s\n", transformation.Name, kv.Key)
+			log.Printf("%s: %s", transformation.Name, kv.Key)
 		}
 	}
 
@@ -83,7 +99,10 @@ func (p *Pipeline) InitStep(data []byte) {
 		if !v.InitStep() {
 			continue
 		}
-		v.Apply(data)
+		_, err := v.Apply(data)
+		if err != nil {
+			log.Printf("Failed to apply Init step: %v", err)
+		}
 	}
 }
 

@@ -1,3 +1,19 @@
+/*
+Copyright (c) 2020 TriggerMesh Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package convert
 
 import (
@@ -44,7 +60,7 @@ func SliceToMap(path []string, value interface{}) map[string]interface{} {
 				path[0]: TryStringToJSONType(value),
 			}
 		}
-		arr := make([]interface{}, index+1, index+1)
+		arr := make([]interface{}, index+1)
 		arr[index] = TryStringToJSONType(value)
 		return map[string]interface{}{
 			path[0]: arr,
@@ -59,7 +75,7 @@ func SliceToMap(path []string, value interface{}) map[string]interface{} {
 			key: m,
 		}
 	}
-	arr := make([]interface{}, index+1, index+1)
+	arr := make([]interface{}, index+1)
 	arr[index] = m
 	return map[string]interface{}{
 		key: arr,
@@ -83,7 +99,7 @@ func MergeMaps(source, appendix map[string]interface{}) map[string]interface{} {
 			if len(value) > resArrLen {
 				resArrLen = len(value)
 			}
-			resArr := make([]interface{}, resArrLen, resArrLen)
+			resArr := make([]interface{}, resArrLen)
 			for i := range resArr {
 				if i < len(value) && value[i] != nil {
 					resArr[i] = value[i]
