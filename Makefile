@@ -1,6 +1,6 @@
 KREPO              = transformations
 KREPO_DESC         = Triggermesh Transformation engine
-COMMANDS           = transformations-controller
+COMMANDS           = transformation-controller transformation-adapter
 
 TARGETS           ?= linux/amd64
 
@@ -24,7 +24,7 @@ GOLINT            ?= golangci-lint run
 GOTOOL            ?= go tool
 GOTEST            ?= gotestsum --junitfile $(TEST_OUTPUT_DIR)/$(KREPO)-unit-tests.xml --format pkgname-and-test-fails --
 
-GOPKGS             = ./cmd/... ./pkg/apis/... ./pkg/adapter/... ./pkg/reconciler/...
+GOPKGS             = ./cmd/... ./pkg/apis/... ./pkg/transformer/... ./pkg/reconciler/...
 LDFLAGS            = -extldflags=-static -w -s
 
 HAS_GOTESTSUM     := $(shell command -v gotestsum;)

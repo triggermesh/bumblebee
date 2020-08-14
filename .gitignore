@@ -1,11 +1,20 @@
-# Operating system temporary files
-.DS_Store
+# Local configurations and secrets
+/.env/
+/.local/
 
-# Editor/IDE specific settings
-.idea
-.vscode/
-*.iml
+# Continuous integration
 
-# Temporary output of build tools
-bazel-*
-*.out
+# Editors and IDEs
+*.tar.gz
+*.tar.bz2
+*.swo
+*.swp
+*~
+/*.sublime-project
+/*.sublime-workspace
+/.DS_Store
+/.idea/
+/.vscode/
+
+# Build artifacts
+**/_output/
