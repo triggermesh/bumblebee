@@ -1,4 +1,4 @@
-apiVersion: eventing.knative.dev/v1beta1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: trigger-transformation
@@ -16,7 +16,7 @@ spec:
 
 ---
 
-apiVersion: eventing.knative.dev/v1beta1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: trigger-eventdisplay

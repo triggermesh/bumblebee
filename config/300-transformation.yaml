@@ -22,7 +22,6 @@ spec:
   names:
     kind: Transformation
     plural: transformations
-    singular: transformation
     categories:
     - all
     - knative
@@ -56,8 +55,10 @@ spec:
                         type: object
                         properties:
                           key:
+                            nullable: true
                             type: string
                           value:
+                            nullable: true
                             type: string
               data:
                 type: array
@@ -72,8 +73,10 @@ spec:
                         type: object
                         properties:
                           key:
+                            nullable: true
                             type: string
                           value:
+                            nullable: true
                             type: string
           status:
             type: object

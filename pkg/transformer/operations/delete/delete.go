@@ -33,10 +33,10 @@ type Delete struct {
 	variables *storage.Storage
 }
 
-// runFirst is used to figure out if this operation should
+// InitStep is used to figure out if this operation should
 // run before main Transformations. For example, Store
 // operation needs to run first to load all Pipeline variables.
-var runFirst bool = false
+var InitStep bool = false
 
 // operationName is used to identify this transformation.
 var operationName string = "delete"
@@ -55,7 +55,7 @@ func (d *Delete) SetStorage(storage *storage.Storage) {
 // InitStep returns "true" if this Transformation should run
 // as init step.
 func (d *Delete) InitStep() bool {
-	return runFirst
+	return InitStep
 }
 
 // New returns a new instance of Delete object.
@@ -79,7 +79,7 @@ func (d *Delete) Apply(data []byte) ([]byte, error) {
 		return data, err
 	}
 
-	output, err := json.MarshalIndent(result, "", "  ")
+	output, err := json.Marshal(result)
 	if err != nil {
 		return data, err
 	}
@@ -96,6 +96,10 @@ func (d *Delete) retrieveString(key string) string {
 
 func (d *Delete) parse(data interface{}, key, path string) (interface{}, error) {
 	output := make(map[string]interface{})
+	// TODO: keep only one filter call
+	if d.filter(path, data) {
+		return nil, nil
+	}
 	switch value := data.(type) {
 	case []byte:
 		var m interface{}
@@ -107,7 +111,7 @@ func (d *Delete) parse(data interface{}, key, path string) (interface{}, error) 
 			return nil, fmt.Errorf("recursive call in []bytes case: %v", err)
 		}
 		return o, nil
-	case float64, bool, string:
+	case float64, bool, string, nil:
 		return value, nil
 	case []interface{}:
 		slice := []interface{}{}
@@ -131,8 +135,6 @@ func (d *Delete) parse(data interface{}, key, path string) (interface{}, error) 
 			}
 			output[k] = o
 		}
-	case nil:
-		output = nil
 	default:
 		log.Printf("unhandled type %T\n", value)
 	}
@@ -149,7 +151,8 @@ func (d *Delete) filter(path string, value interface{}) bool {
 	case d.Value != "":
 		return d.filterValue(value)
 	}
-	return false
+	// consider empty key and path as "delete any"
+	return true
 }
 
 func (d *Delete) filterPath(path string) bool {
