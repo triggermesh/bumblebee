@@ -34,6 +34,12 @@ type Transformer struct {
 	DataPipeline    *operations.Pipeline
 }
 
+// ceContext represents CloudEvents context structure but with exported Extensions.
+type ceContext struct {
+	*cloudevents.EventContextV1 `json:",inline"`
+	Extensions                  map[string]interface{} `json:"Extensions,omitempty"`
+}
+
 // NewTransformer creates Transformer instance.
 func NewTransformer(context, data []v1alpha1.Transform) (Transformer, error) {
 	contextPipeline, err := operations.New(context)
@@ -69,33 +75,43 @@ func (t *Transformer) receiveAndTransform(ctx context.Context, event cloudevents
 	}
 	log.Printf("Received %q event\n", event.Type())
 
-	contextCE, err := json.Marshal(event.Context)
+	localContext := ceContext{
+		EventContextV1: event.Context.AsV1(),
+		Extensions:     event.Context.AsV1().GetExtensions(),
+	}
+
+	localContextBytes, err := json.Marshal(localContext)
 	if err != nil {
-		return &event, fmt.Errorf("Cannot encode CE context: %v", err)
+		return &event, fmt.Errorf("cannot encode CE context: %w", err)
 	}
 
 	// Run init step such as load Pipeline variables first
-	t.ContextPipeline.InitStep(contextCE)
+	t.ContextPipeline.InitStep(localContextBytes)
 	t.DataPipeline.InitStep(event.Data())
 
 	// CE Context transformation
-	contextCE, err = t.ContextPipeline.Apply(contextCE)
+	localContextBytes, err = t.ContextPipeline.Apply(localContextBytes)
 	if err != nil {
-		return &event, fmt.Errorf("Cannot apply transformation on CE context: %v", err)
+		return &event, fmt.Errorf("cannot apply transformation on CE context: %w", err)
 	}
-	newContext := cloudevents.EventContextV1{}
-	if err := json.Unmarshal(contextCE, &newContext); err != nil {
-		return &event, fmt.Errorf("Cannot decode CE new context: %v", err)
+
+	if err := json.Unmarshal(localContextBytes, &localContext); err != nil {
+		return &event, fmt.Errorf("cannot decode CE new context: %w", err)
 	}
-	event.Context = newContext.AsV1()
+	event.Context = localContext
+	for k, v := range localContext.Extensions {
+		if err := event.Context.SetExtension(k, v); err != nil {
+			log.Printf("Cannot set CE extension: %v", err)
+		}
+	}
 
 	// CE Data transformation
 	data, err := t.DataPipeline.Apply(event.Data())
 	if err != nil {
-		return &event, fmt.Errorf("Cannot apply transformation on CE data: %v", err)
+		return &event, fmt.Errorf("cannot apply transformation on CE data: %w", err)
 	}
 	if err = event.SetData(cloudevents.ApplicationJSON, data); err != nil {
-		return &event, fmt.Errorf("cannot set data: %v", err)
+		return &event, fmt.Errorf("cannot set data: %w", err)
 	}
 
 	return &event, nil
