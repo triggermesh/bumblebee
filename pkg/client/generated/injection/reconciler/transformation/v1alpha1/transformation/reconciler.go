@@ -24,9 +24,9 @@ import (
 	fmt "fmt"
 	reflect "reflect"
 
-	v1alpha1 "github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
-	internalclientset "github.com/triggermesh/transformation-prototype/pkg/client/generated/clientset/internalclientset"
-	transformationv1alpha1 "github.com/triggermesh/transformation-prototype/pkg/client/generated/listers/transformation/v1alpha1"
+	v1alpha1 "github.com/triggermesh/transformation/pkg/apis/transformation/v1alpha1"
+	internalclientset "github.com/triggermesh/transformation/pkg/client/generated/clientset/internalclientset"
+	transformationv1alpha1 "github.com/triggermesh/transformation/pkg/client/generated/listers/transformation/v1alpha1"
 	zap "go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	equality "k8s.io/apimachinery/pkg/api/equality"

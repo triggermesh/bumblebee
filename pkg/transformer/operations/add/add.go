@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/common/convert"
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/common/storage"
+	"github.com/triggermesh/transformation/pkg/transformer/common/convert"
+	"github.com/triggermesh/transformation/pkg/transformer/common/storage"
 )
 
 // Add object implements Transformer interface.

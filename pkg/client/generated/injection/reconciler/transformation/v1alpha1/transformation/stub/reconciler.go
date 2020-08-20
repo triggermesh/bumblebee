@@ -21,8 +21,8 @@ package transformation
 import (
 	context "context"
 
-	v1alpha1 "github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
-	transformation "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/reconciler/transformation/v1alpha1/transformation"
+	v1alpha1 "github.com/triggermesh/transformation/pkg/apis/transformation/v1alpha1"
+	transformation "github.com/triggermesh/transformation/pkg/client/generated/injection/reconciler/transformation/v1alpha1/transformation"
 	v1 "k8s.io/api/core/v1"
 	reconciler "knative.dev/pkg/reconciler"
 )

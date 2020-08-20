@@ -24,8 +24,8 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 
-	"github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
-	"github.com/triggermesh/transformation-prototype/pkg/transformer"
+	"github.com/triggermesh/transformation/pkg/apis/transformation/v1alpha1"
+	"github.com/triggermesh/transformation/pkg/transformer"
 )
 
 const (

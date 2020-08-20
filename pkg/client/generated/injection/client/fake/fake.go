@@ -21,8 +21,8 @@ package fake
 import (
 	context "context"
 
-	fake "github.com/triggermesh/transformation-prototype/pkg/client/generated/clientset/internalclientset/fake"
-	client "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/client"
+	fake "github.com/triggermesh/transformation/pkg/client/generated/clientset/internalclientset/fake"
+	client "github.com/triggermesh/transformation/pkg/client/generated/injection/client"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	rest "k8s.io/client-go/rest"
 	injection "knative.dev/pkg/injection"
@@ -48,7 +48,7 @@ func Get(ctx context.Context) *fake.Clientset {
 	untyped := ctx.Value(client.Key{})
 	if untyped == nil {
 		logging.FromContext(ctx).Panic(
-			"Unable to fetch github.com/triggermesh/transformation-prototype/pkg/client/generated/clientset/internalclientset/fake.Clientset from context.")
+			"Unable to fetch github.com/triggermesh/transformation/pkg/client/generated/clientset/internalclientset/fake.Clientset from context.")
 	}
 	return untyped.(*fake.Clientset)
 }

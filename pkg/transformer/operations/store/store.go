@@ -18,10 +18,11 @@ package store
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/common/convert"
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/common/storage"
+	"github.com/triggermesh/transformation/pkg/transformer/common/convert"
+	"github.com/triggermesh/transformation/pkg/transformer/common/storage"
 )
 
 // Store object implements Transformer interface.
@@ -70,7 +71,14 @@ func (s *Store) New(key, value string) interface{} {
 // Apply is a main method of Transformation that stores JSON values
 // into variables that can be used by other Transformations in a pipeline.
 func (s *Store) Apply(data []byte) ([]byte, error) {
-	path := convert.SliceToMap(strings.Split(s.retrieveString(s.Value), "."), "")
+	if s.Path == "" {
+		return data, fmt.Errorf("key cannot be empty in store operation")
+	}
+	if s.Value == "" {
+		s.variables.Set(s.retrieveString(s.Path), data)
+		return data, nil
+	}
+	path := convert.SliceToMap(strings.Split(s.Value, "."), "")
 
 	event := make(map[string]interface{})
 	if err := json.Unmarshal(data, &event); err != nil {
@@ -78,7 +86,7 @@ func (s *Store) Apply(data []byte) ([]byte, error) {
 	}
 
 	value := readValue(event, path)
-	s.variables.Set(s.Path, value)
+	s.variables.Set(s.composeKey(), value)
 
 	return data, nil
 }
@@ -88,6 +96,18 @@ func (s *Store) retrieveString(key string) string {
 		return value
 	}
 	return key
+}
+
+func (s *Store) composeKey() string {
+	result := s.Path
+	for _, key := range s.variables.ListKeys() {
+		index := strings.Index(result, key)
+		if index == -1 {
+			continue
+		}
+		result = fmt.Sprintf("%s%s%s", result[:index], s.retrieveString(key), result[index+len(key):])
+	}
+	return result
 }
 
 func readValue(source, path map[string]interface{}) interface{} {

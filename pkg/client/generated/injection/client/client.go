@@ -21,7 +21,7 @@ package client
 import (
 	context "context"
 
-	internalclientset "github.com/triggermesh/transformation-prototype/pkg/client/generated/clientset/internalclientset"
+	internalclientset "github.com/triggermesh/transformation/pkg/client/generated/clientset/internalclientset"
 	rest "k8s.io/client-go/rest"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
@@ -43,7 +43,7 @@ func Get(ctx context.Context) internalclientset.Interface {
 	untyped := ctx.Value(Key{})
 	if untyped == nil {
 		logging.FromContext(ctx).Panic(
-			"Unable to fetch github.com/triggermesh/transformation-prototype/pkg/client/generated/clientset/internalclientset.Interface from context.")
+			"Unable to fetch github.com/triggermesh/transformation/pkg/client/generated/clientset/internalclientset.Interface from context.")
 	}
 	return untyped.(internalclientset.Interface)
 }

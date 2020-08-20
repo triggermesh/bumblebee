@@ -19,8 +19,8 @@ limitations under the License.
 package transformation
 
 import (
-	internalinterfaces "github.com/triggermesh/transformation-prototype/pkg/client/generated/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/triggermesh/transformation-prototype/pkg/client/generated/informers/externalversions/transformation/v1alpha1"
+	internalinterfaces "github.com/triggermesh/transformation/pkg/client/generated/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/triggermesh/transformation/pkg/client/generated/informers/externalversions/transformation/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

@@ -21,9 +21,9 @@ package fake
 import (
 	context "context"
 
-	externalversions "github.com/triggermesh/transformation-prototype/pkg/client/generated/informers/externalversions"
-	fake "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/client/fake"
-	factory "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/informers/factory"
+	externalversions "github.com/triggermesh/transformation/pkg/client/generated/informers/externalversions"
+	fake "github.com/triggermesh/transformation/pkg/client/generated/injection/client/fake"
+	factory "github.com/triggermesh/transformation/pkg/client/generated/injection/informers/factory"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 )

@@ -21,8 +21,8 @@ package transformation
 import (
 	context "context"
 
-	v1alpha1 "github.com/triggermesh/transformation-prototype/pkg/client/generated/informers/externalversions/transformation/v1alpha1"
-	factory "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/informers/factory"
+	v1alpha1 "github.com/triggermesh/transformation/pkg/client/generated/informers/externalversions/transformation/v1alpha1"
+	factory "github.com/triggermesh/transformation/pkg/client/generated/injection/informers/factory"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
@@ -46,7 +46,7 @@ func Get(ctx context.Context) v1alpha1.TransformationInformer {
 	untyped := ctx.Value(Key{})
 	if untyped == nil {
 		logging.FromContext(ctx).Panic(
-			"Unable to fetch github.com/triggermesh/transformation-prototype/pkg/client/generated/informers/externalversions/transformation/v1alpha1.TransformationInformer from context.")
+			"Unable to fetch github.com/triggermesh/transformation/pkg/client/generated/informers/externalversions/transformation/v1alpha1.TransformationInformer from context.")
 	}
 	return untyped.(v1alpha1.TransformationInformer)
 }

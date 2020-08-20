@@ -22,7 +22,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/common/storage"
+	"github.com/triggermesh/transformation/pkg/transformer/common/storage"
 )
 
 // Delete object implements Transformer interface.

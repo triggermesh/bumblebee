@@ -23,9 +23,9 @@ import (
 	"log"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/common/storage"
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/operations"
+	"github.com/triggermesh/transformation/pkg/apis/transformation/v1alpha1"
+	"github.com/triggermesh/transformation/pkg/transformer/common/storage"
+	"github.com/triggermesh/transformation/pkg/transformer/operations"
 )
 
 // Transformer contains Pipelines for CE Context and Data transformations.

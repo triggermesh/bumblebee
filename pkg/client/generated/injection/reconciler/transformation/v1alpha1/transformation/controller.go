@@ -24,9 +24,9 @@ import (
 	reflect "reflect"
 	strings "strings"
 
-	internalclientsetscheme "github.com/triggermesh/transformation-prototype/pkg/client/generated/clientset/internalclientset/scheme"
-	client "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/client"
-	transformation "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/informers/transformation/v1alpha1/transformation"
+	internalclientsetscheme "github.com/triggermesh/transformation/pkg/client/generated/clientset/internalclientset/scheme"
+	client "github.com/triggermesh/transformation/pkg/client/generated/injection/client"
+	transformation "github.com/triggermesh/transformation/pkg/client/generated/injection/informers/transformation/v1alpha1/transformation"
 	corev1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	types "k8s.io/apimachinery/pkg/types"

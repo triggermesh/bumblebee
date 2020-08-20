@@ -1,4 +1,4 @@
-module github.com/triggermesh/transformation-prototype
+module github.com/triggermesh/transformation
 
 go 1.14
 

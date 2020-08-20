@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/triggermesh/transformation-prototype/pkg/apis/transformation"
+	"github.com/triggermesh/transformation/pkg/apis/transformation"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

@@ -21,10 +21,10 @@ package v1alpha1
 import (
 	time "time"
 
-	transformationv1alpha1 "github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
-	internalclientset "github.com/triggermesh/transformation-prototype/pkg/client/generated/clientset/internalclientset"
-	internalinterfaces "github.com/triggermesh/transformation-prototype/pkg/client/generated/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/triggermesh/transformation-prototype/pkg/client/generated/listers/transformation/v1alpha1"
+	transformationv1alpha1 "github.com/triggermesh/transformation/pkg/apis/transformation/v1alpha1"
+	internalclientset "github.com/triggermesh/transformation/pkg/client/generated/clientset/internalclientset"
+	internalinterfaces "github.com/triggermesh/transformation/pkg/client/generated/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/triggermesh/transformation/pkg/client/generated/listers/transformation/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"

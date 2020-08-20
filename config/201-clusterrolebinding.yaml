@@ -19,7 +19,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: transformation-controller
-    namespace: transformation
+    namespace: triggermesh
 roleRef:
   kind: ClusterRole
   name: transformation-admin
