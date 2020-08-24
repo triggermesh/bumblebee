@@ -30,13 +30,13 @@ spec:
       serviceAccountName: transformation-controller
       containers:
       - name: controller
-        image: ko://github.com/triggermesh/transformation-prototype/cmd/transformation-controller
+        image: ko://github.com/triggermesh/bumblebee/cmd/transformation-controller
         ports:
         - name: metrics
           containerPort: 9090
         env:
         - name: TRANSFORMER_IMAGE
-          value: ko://github.com/triggermesh/transformation-prototype/cmd/transformation-adapter
+          value: ko://github.com/triggermesh/bumblebee/cmd/transformation-adapter
         - name: SYSTEM_NAMESPACE
           valueFrom:
             fieldRef:

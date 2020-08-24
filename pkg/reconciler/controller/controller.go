@@ -29,8 +29,8 @@ import (
 	servingv1client "knative.dev/serving/pkg/client/injection/client"
 	knsvcinformer "knative.dev/serving/pkg/client/injection/informers/serving/v1/service"
 
-	transformationinformer "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/informers/transformation/v1alpha1/transformation"
-	transformationreconciler "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/reconciler/transformation/v1alpha1/transformation"
+	transformationinformer "github.com/triggermesh/bumblebee/pkg/client/generated/injection/informers/transformation/v1alpha1/transformation"
+	transformationreconciler "github.com/triggermesh/bumblebee/pkg/client/generated/injection/reconciler/transformation/v1alpha1/transformation"
 )
 
 type envConfig struct {

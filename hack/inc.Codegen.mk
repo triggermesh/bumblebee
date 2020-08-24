@@ -3,7 +3,7 @@
 # see https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md#generate-code
 
 # Name of the Go package for this repository
-PKG := github.com/triggermesh/transformation-prototype
+PKG := github.com/triggermesh/bumblebee
 
 # List of API groups to generate code for
 # e.g. "transformation/v1alpha1 transformation/v1alpha2"

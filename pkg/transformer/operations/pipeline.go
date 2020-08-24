@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/common/storage"
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/operations/add"
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/operations/delete"
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/operations/shift"
-	"github.com/triggermesh/transformation-prototype/pkg/transformer/operations/store"
+	"github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
+	"github.com/triggermesh/bumblebee/pkg/transformer/common/storage"
+	"github.com/triggermesh/bumblebee/pkg/transformer/operations/add"
+	"github.com/triggermesh/bumblebee/pkg/transformer/operations/delete"
+	"github.com/triggermesh/bumblebee/pkg/transformer/operations/shift"
+	"github.com/triggermesh/bumblebee/pkg/transformer/operations/store"
 )
 
 // Transformer is an interface that contains common methods

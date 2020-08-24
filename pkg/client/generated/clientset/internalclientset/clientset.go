@@ -21,7 +21,7 @@ package internalclientset
 import (
 	"fmt"
 
-	flowv1alpha1 "github.com/triggermesh/transformation-prototype/pkg/client/generated/clientset/internalclientset/typed/transformation/v1alpha1"
+	flowv1alpha1 "github.com/triggermesh/bumblebee/pkg/client/generated/clientset/internalclientset/typed/transformation/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

@@ -19,8 +19,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
-	"github.com/triggermesh/transformation-prototype/pkg/client/generated/clientset/internalclientset/scheme"
+	v1alpha1 "github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
+	"github.com/triggermesh/bumblebee/pkg/client/generated/clientset/internalclientset/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

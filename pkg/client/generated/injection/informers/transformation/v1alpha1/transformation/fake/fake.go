@@ -21,8 +21,8 @@ package fake
 import (
 	context "context"
 
-	fake "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/informers/factory/fake"
-	transformation "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/informers/transformation/v1alpha1/transformation"
+	fake "github.com/triggermesh/bumblebee/pkg/client/generated/injection/informers/factory/fake"
+	transformation "github.com/triggermesh/bumblebee/pkg/client/generated/injection/informers/transformation/v1alpha1/transformation"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 )
