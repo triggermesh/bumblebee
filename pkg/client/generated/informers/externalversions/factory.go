@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	internalclientset "github.com/triggermesh/transformation-prototype/pkg/client/generated/clientset/internalclientset"
-	internalinterfaces "github.com/triggermesh/transformation-prototype/pkg/client/generated/informers/externalversions/internalinterfaces"
-	transformation "github.com/triggermesh/transformation-prototype/pkg/client/generated/informers/externalversions/transformation"
+	internalclientset "github.com/triggermesh/bumblebee/pkg/client/generated/clientset/internalclientset"
+	internalinterfaces "github.com/triggermesh/bumblebee/pkg/client/generated/informers/externalversions/internalinterfaces"
+	transformation "github.com/triggermesh/bumblebee/pkg/client/generated/informers/externalversions/transformation"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

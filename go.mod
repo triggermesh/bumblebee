@@ -1,4 +1,4 @@
-module github.com/triggermesh/transformation-prototype
+module github.com/triggermesh/bumblebee
 
 go 1.14
 

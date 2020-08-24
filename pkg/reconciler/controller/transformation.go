@@ -33,9 +33,9 @@ import (
 	servingv1client "knative.dev/serving/pkg/client/clientset/versioned"
 	servingv1listers "knative.dev/serving/pkg/client/listers/serving/v1"
 
-	transformationv1alpha1 "github.com/triggermesh/transformation-prototype/pkg/apis/transformation/v1alpha1"
-	transformationreconciler "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/reconciler/transformation/v1alpha1/transformation"
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/controller/resources"
+	transformationv1alpha1 "github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
+	transformationreconciler "github.com/triggermesh/bumblebee/pkg/client/generated/injection/reconciler/transformation/v1alpha1/transformation"
+	"github.com/triggermesh/bumblebee/pkg/reconciler/controller/resources"
 )
 
 const (

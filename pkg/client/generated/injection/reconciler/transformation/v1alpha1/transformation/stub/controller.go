@@ -21,8 +21,8 @@ package transformation
 import (
 	context "context"
 
-	transformation "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/informers/transformation/v1alpha1/transformation"
-	v1alpha1transformation "github.com/triggermesh/transformation-prototype/pkg/client/generated/injection/reconciler/transformation/v1alpha1/transformation"
+	transformation "github.com/triggermesh/bumblebee/pkg/client/generated/injection/informers/transformation/v1alpha1/transformation"
+	v1alpha1transformation "github.com/triggermesh/bumblebee/pkg/client/generated/injection/reconciler/transformation/v1alpha1/transformation"
 	configmap "knative.dev/pkg/configmap"
 	controller "knative.dev/pkg/controller"
 	logging "knative.dev/pkg/logging"

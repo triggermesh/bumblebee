@@ -18,7 +18,7 @@ package main
 
 import (
 	// The set of controllers this controller process runs.
-	"github.com/triggermesh/transformation-prototype/pkg/reconciler/controller"
+	"github.com/triggermesh/bumblebee/pkg/reconciler/controller"
 
 	// This defines the shared main for injected controllers.
 	"knative.dev/pkg/injection/sharedmain"
