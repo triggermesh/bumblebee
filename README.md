@@ -1,4 +1,4 @@
-## Transformation prototype
+# Transformation prototype
 
 Transformation is an addressable CR based on Knative Serving 
 aimed on flexible CloudEvents modifications. When you create 
@@ -8,98 +8,98 @@ new CloudEvent.
 
 Current Transformation engine support following basic operations
 
-### Operations
+## Operations
 
-#### Delete
+### Delete
 
 Delete CE keys or objects.
 
-Example 1.
+##### Example 1
 
 Remove a key.
 
-```
+```yaml
 spec:
   data:
-  - name: delete
+  - operation: delete
     paths:
     - key: foo
     - key: array[1].foo
     - key: foo.array[5]
 ```
 
-Example 2.
+##### Example 2
 
 Remove a "foo" key only if its value is equal to "bar". 
 
-```
+```yaml
 spec:
   data:
-  - name: delete
+  - operation: delete
     paths:
     - key: foo
       value: bar
 ```
 
-Example 3.
+##### Example 3
 
 Recursively remove all keys with specified value.
 
-```
+```yaml
 spec
   data:
-  - name: delete
+  - operation: delete
     paths:
     - value: leaked password
 ```
 
-Example 4.
+##### Example 4
 
 Delete everything. Useful for composing completely new CE
 using stored variables.
 
-```
+```yaml
 spec
   data:
-  - name: delete
+  - operation: delete
     paths:
     - key:
 ```
 
-#### Add
+### Add
 
 Add new or override existing CE keys.
 
-Example 1.
+##### Example 1
 
 Override Cloud Event type. This operation can be used to implement
 complex Transformation logic with multiple Triggers and CE type
 filtering.
 
-```
+```yaml
 spec:
   context:
-  - name: add
-    paths: 
+  - operation: add
+    paths:
     - key: type
       value: ce.after.transformation
 ```
 
-Example 2.
+##### Example 2
 
 Create a new object with nested structure. Value "42" will be 
 converted to integer.
 
-```
+```yaml
 spec:
   data:
-  - name: add
+  - operation: add
     paths:
     - key: The.Ultimate.Questions.Answer
       value: "42"
 ```
 
-Example 3.
+##### Example 3
 
 Create arrays or modify existing ones. "True" value will be
 converted to boolean and added as a second item of a new array
@@ -107,10 +107,10 @@ converted to boolean and added as a second item of a new array
 an integer with a new key "newKey" as a first item of and
 existing array "commits".
 
-```
+```yaml
 spec:
   data:
-  - name: add
+  - operation: add
     paths:
     - key: newObject.array[2]
       value: "true"
@@ -118,63 +118,63 @@ spec:
       value: "1337"
 ```
 
-Example 4.
+##### Example 4
 
 "Add" operation supports value composing from variables and
 static strings.
 
-```
+```yaml
 spec:
   data:
-  - name: add
+  - operation: add
     paths:
     - key: id
-      value: ce-$source-$id 
+      value: ce-$source-$id
 ```
 
-#### Shift
+### Shift
 
 Move existing CE values to new keys.
 
-Example 1.
+##### Example 1
 
 Move value from "foo" key to "bar"
 
-```
+```yaml
 spec:
   data:
-  - name: shift
+  - operation: shift
     paths:
     - key: foo:bar
 ```
 
-Example 2.
+##### Example 2
 
 Move key only if its value is equal to "bar".
 
-```
+```yaml
 spec:
   data:
-  - name: shift
+  - operation: shift
     paths:
     - key: old:new
       value: bar
 ```
 
-Example 3.
+##### Example 3
 
 Shift supports nested objects and arrays:
 
-```
+```yaml
 spec:
   data:
-  - name: shift
+  - operation: shift
     paths:
     - key: array[0].id:newArray[1].newId
     - key: object.list[0]:newItem
 ```
 
-#### Store
+##### Store
 
 Store CE value as a Pipeline variable. Useful in combination with 
 other operations. Variables are shared across pipelines and in 
@@ -185,23 +185,23 @@ Example.
 Store CE type and source and add them into headers array in a payload.
 Also set a new CE type and save the original one in context extensions.
 
-```
+```yaml
 spec:
   context:
-  - name: store
+  - operation: store
     paths:
     - key: $ceType
       value: type
     - key: $ceSource
       value: source
-  - name: add
+  - operation: add
     paths:
     - key: type
       value: ce.after.transformation
     - key: extensions.OriginalType
       value: $ceType
   data:
-  - name: add
+  - operation: add
     paths:
     - key: headers[0].source
       value: $ceSource
@@ -209,12 +209,11 @@ spec:
       value: $ceType
 ```
 
-### Events routing
+## Events routing
 
-The CE with JSON payload being routed to Transformation CR where 
+The CE with JSON payload being routed to Transformation CR where
 it gets modified according to the Specs and then being routed back
 to sender:
-
 
 ```
 +------------------+        +-------------------+      +------------------+
@@ -243,7 +242,7 @@ to sender:
                                                        +------------------+
 ```
 
-### Sample
+## Sample
 
 [Sample](config/samples) directory contains manifests to deploy
 full set of objects including Broker, Event-display, Triggers and
