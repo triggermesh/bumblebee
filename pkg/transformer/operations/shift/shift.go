@@ -79,7 +79,7 @@ func (s *Shift) New(key, value string) interface{} {
 // Apply is a main method of Transformation that moves existing
 // values to a new locations.
 func (s *Shift) Apply(data []byte) ([]byte, error) {
-	oldPath := convert.SliceToMap(strings.Split(s.retrieveString(s.Path), "."), "")
+	oldPath := convert.SliceToMap(strings.Split(s.Path, "."), "")
 
 	event := make(map[string]interface{})
 	if err := json.Unmarshal(data, &event); err != nil {
@@ -88,12 +88,12 @@ func (s *Shift) Apply(data []byte) ([]byte, error) {
 
 	newEvent, value := extractValue(event, oldPath)
 	if s.Value != "" {
-		if !equal(convert.TryStringToJSONType(s.retrieveInterface(s.Value)), value) {
+		if !equal(s.retrieveInterface(s.Value), value) {
 			return data, nil
 		}
 	}
 
-	newPath := convert.SliceToMap(strings.Split(s.retrieveString(s.NewPath), "."), value)
+	newPath := convert.SliceToMap(strings.Split(s.NewPath, "."), value)
 
 	result := convert.MergeMaps(newEvent, newPath)
 	output, err := json.Marshal(result)
@@ -106,13 +106,6 @@ func (s *Shift) Apply(data []byte) ([]byte, error) {
 
 func (s *Shift) retrieveInterface(key string) interface{} {
 	if value := s.variables.Get(key); value != nil {
-		return value
-	}
-	return key
-}
-
-func (s *Shift) retrieveString(key string) string {
-	if value, ok := s.variables.GetString(key); ok {
 		return value
 	}
 	return key

@@ -47,7 +47,7 @@ spec:
                 items: 
                   type: object
                   properties:
-                    name:
+                    operation:
                       type: string
                     paths:
                       type: array
@@ -60,12 +60,14 @@ spec:
                           value:
                             nullable: true
                             type: string
+                  required:
+                  - operation
               data:
                 type: array
                 items: 
                   type: object
                   properties:
-                    name:
+                    operation:
                       type: string
                     paths:
                       type: array
@@ -78,6 +80,8 @@ spec:
                           value:
                             nullable: true
                             type: string
+                  required:
+                  - operation
           status:
             type: object
             properties:

@@ -21,24 +21,6 @@ import (
 	"strings"
 )
 
-// TryStringToJSONType accepts interface value and if value is string
-// it will try to format it into JSON friendly representation of bool
-// or float64. Otherwise value will be returned unchanged.
-func TryStringToJSONType(value interface{}) interface{} {
-	switch v := value.(type) {
-	case string:
-		b, err := strconv.ParseBool(v)
-		if err == nil {
-			return b
-		}
-		f, err := strconv.ParseFloat(v, 64)
-		if err == nil {
-			return f
-		}
-	}
-	return value
-}
-
 // SliceToMap converts string slice into map that can be encoded into JSON.
 func SliceToMap(path []string, value interface{}) map[string]interface{} {
 	var array bool
@@ -57,11 +39,11 @@ func SliceToMap(path []string, value interface{}) map[string]interface{} {
 	if len(path) == 1 {
 		if !array {
 			return map[string]interface{}{
-				path[0]: TryStringToJSONType(value),
+				path[0]: value,
 			}
 		}
 		arr := make([]interface{}, index+1)
-		arr[index] = TryStringToJSONType(value)
+		arr[index] = value
 		return map[string]interface{}{
 			path[0]: arr,
 		}

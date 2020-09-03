@@ -70,14 +70,14 @@ func New(transformations []v1alpha1.Transform) (*Pipeline, error) {
 	p := []Transformer{}
 
 	for _, transformation := range transformations {
-		operation, exist := availableTransformers[transformation.Name]
+		operation, exist := availableTransformers[transformation.Operation]
 		if !exist {
-			return nil, fmt.Errorf("transformation %q not found", transformation.Name)
+			return nil, fmt.Errorf("transformation %q not found", transformation.Operation)
 		}
 		for _, kv := range transformation.Paths {
 			tr := operation.New(kv.Key, kv.Value)
 			p = append(p, tr.(Transformer))
-			log.Printf("%s: %s", transformation.Name, kv.Key)
+			log.Printf("%s: %s", transformation.Operation, kv.Key)
 		}
 	}
 
