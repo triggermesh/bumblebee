@@ -127,7 +127,7 @@ func (r *Reconciler) reconcile(ctx context.Context, t *transformationv1alpha1.Tr
 		newSvc := resources.NewKnService(t.Namespace, t.Name,
 			resources.Image(r.transformerImage),
 			resources.EnvVar(envVarName, string(trn)),
-			// resources.KsvcLabelVisibilityClusterLocal(),
+			resources.KsvcLabelVisibilityClusterLocal(),
 		)
 		svc.Spec = newSvc.Spec
 		_, err := r.servingClientSet.ServingV1().Services(t.Namespace).Update(svc)

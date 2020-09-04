@@ -70,7 +70,7 @@ func (s *Store) New(key, value string) interface{} {
 // Apply is a main method of Transformation that stores JSON values
 // into variables that can be used by other Transformations in a pipeline.
 func (s *Store) Apply(data []byte) ([]byte, error) {
-	path := convert.SliceToMap(strings.Split(s.retrieveString(s.Value), "."), "")
+	path := convert.SliceToMap(strings.Split(s.Value, "."), "")
 
 	event := make(map[string]interface{})
 	if err := json.Unmarshal(data, &event); err != nil {
@@ -81,13 +81,6 @@ func (s *Store) Apply(data []byte) ([]byte, error) {
 	s.variables.Set(s.Path, value)
 
 	return data, nil
-}
-
-func (s *Store) retrieveString(key string) string {
-	if value, ok := s.variables.GetString(key); ok {
-		return value
-	}
-	return key
 }
 
 func readValue(source, path map[string]interface{}) interface{} {

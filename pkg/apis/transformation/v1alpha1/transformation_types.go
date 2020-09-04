@@ -60,8 +60,8 @@ type TransformationSpec struct {
 
 // Transform describes transformation schemes for different CE types.
 type Transform struct {
-	Name  string `json:"name"`
-	Paths []Path `json:"paths"`
+	Operation string `json:"operation"`
+	Paths     []Path `json:"paths"`
 }
 
 type Path struct {

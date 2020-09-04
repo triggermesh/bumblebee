@@ -29,6 +29,7 @@ import (
 type Delete struct {
 	Path  string
 	Value string
+	Type  string
 
 	variables *storage.Storage
 }
@@ -71,7 +72,6 @@ func (d *Delete) New(key, value string) interface{} {
 // Apply is a main method of Transformation that removed any type of
 // variables from existing JSON.
 func (d *Delete) Apply(data []byte) ([]byte, error) {
-	d.Path = d.retrieveString(d.Path)
 	d.Value = d.retrieveString(d.Value)
 
 	result, err := d.parse(data, "", "")
@@ -88,8 +88,10 @@ func (d *Delete) Apply(data []byte) ([]byte, error) {
 }
 
 func (d *Delete) retrieveString(key string) string {
-	if value, ok := d.variables.GetString(key); ok {
-		return value
+	if value := d.variables.Get(key); value != nil {
+		if str, ok := value.(string); ok {
+			return str
+		}
 	}
 	return key
 }

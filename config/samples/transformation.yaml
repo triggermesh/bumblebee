@@ -4,20 +4,20 @@ metadata:
   name: demo
 spec:
   context:
-  - name: add
+  - operation: add
     paths:
     # set CE type 
     - key: type
       value: ce.after.transformation
     - key: id
       value: $commitID
-  - name: store
+  - operation: store
     paths:
     # store CE source as a variable to pass it into CE data
     - key: $ceSource
       value: source
   data:
-  - name: delete
+  - operation: delete
     paths:
     # remove key if value is equal
     - key: commits[0].author.name
@@ -26,7 +26,7 @@ spec:
     - key: compare
     # remove everyhing with this value
     - value: f056c91be9c9447e3fb0c27c1fe2606a3d32d8fa
-  - name: add
+  - operation: add
     paths:
     # add new key
     - key: HELLO
@@ -46,7 +46,7 @@ spec:
     # add sored value from CE context 
     - key: ceSource
       value: $ceSource
-  - name: shift
+  - operation: shift
     paths:
     # key rename
     - key: ref:NEWREF
@@ -59,18 +59,18 @@ spec:
     - key: commits[0].tree_id:newCommits[1].NEWID
     # move array item
     - key: head_commit.modified[0]:NEWMOD
-  - name: store
+  - operation: store
     paths:
     # store field from repository object in $reponame variable  
     - key: $reponame
       value: repository.name
     - key: $commitID
       value: head_commit.tree_id
-  - name: delete
+  - operation: delete
     paths:
     # remove repository object 
     - key: repository
-  - name: add
+  - operation: add
     paths:
     # add stored repository name as a new key 
     - key: repository

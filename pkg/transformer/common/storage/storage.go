@@ -47,14 +47,6 @@ func (s *Storage) Get(k string) interface{} {
 	return s.data[k]
 }
 
-// GetString reads value by a key and asserts String type.
-func (s *Storage) GetString(k string) (string, bool) {
-	s.mux.RLock()
-	defer s.mux.RUnlock()
-	str, ok := s.data[k].(string)
-	return str, ok
-}
-
 // ListKeys returns the slice of var keys stored in memory.
 func (s *Storage) ListKeys() []string {
 	s.mux.RLock()
