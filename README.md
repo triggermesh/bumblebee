@@ -246,8 +246,7 @@ to sender:
 
 [Sample](config/samples) directory contains manifests to deploy
 full set of objects including Broker, Event-display, Triggers and
-[Transformation](config/samples/transformation.yaml) to see how
-it works.
+Transformation to see how it works.
 
 ## Support
 
