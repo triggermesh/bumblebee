@@ -30,13 +30,13 @@ metadata:
   name: googlesheet-transformation
 spec:
   context:
-  - name: add
+  - operation: add
     paths:
     - key: type
       value: io.triggermesh.transformation.googlesheet
 
   data:
-  - name: store
+  - operation: store
     paths:
     - key: $type
       value: type
@@ -47,11 +47,11 @@ spec:
     - key: $verb
       value: verb
 
-  - name: delete
+  - operation: delete
     paths:
     - key:
 
-  - name: add
+  - operation: add
     paths:
     - key: message
       value: 'type: $type, user: $object, repository: $subject, action: $verb'

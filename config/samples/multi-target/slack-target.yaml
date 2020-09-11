@@ -22,13 +22,13 @@ metadata:
   name: slack-transformation
 spec:
   context:
-  - name: add
+  - operation: add
     paths:
     - key: type
       value: com.slack.webapi.chat.postMessage
 
   data:
-  - name: store
+  - operation: store
     paths:
     - key: $object
       value: object 
@@ -37,11 +37,11 @@ spec:
     - key: $verb
       value: verb
 
-  - name: delete
+  - operation: delete
     paths:
     - key:
 
-  - name: add
+  - operation: add
     paths:
     - key: channel
       value: github-demo-channel
