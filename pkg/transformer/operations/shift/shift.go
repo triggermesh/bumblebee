@@ -81,7 +81,7 @@ func (s *Shift) New(key, value string) interface{} {
 func (s *Shift) Apply(data []byte) ([]byte, error) {
 	oldPath := convert.SliceToMap(strings.Split(s.Path, "."), "")
 
-	event := make(map[string]interface{})
+	var event interface{}
 	if err := json.Unmarshal(data, &event); err != nil {
 		return data, err
 	}
@@ -95,7 +95,7 @@ func (s *Shift) Apply(data []byte) ([]byte, error) {
 
 	newPath := convert.SliceToMap(strings.Split(s.NewPath, "."), value)
 
-	result := convert.MergeMaps(newEvent, newPath)
+	result := convert.MergeJSONWithMap(newEvent, newPath)
 	output, err := json.Marshal(result)
 	if err != nil {
 		return data, err
@@ -111,21 +111,35 @@ func (s *Shift) retrieveInterface(key string) interface{} {
 	return key
 }
 
-func extractValue(source, path map[string]interface{}) (map[string]interface{}, interface{}) {
-	var resultPath interface{}
+func extractValue(source interface{}, path map[string]interface{}) (map[string]interface{}, interface{}) {
+	var ok bool
+	var result interface{}
+	sourceMap := make(map[string]interface{})
 	for k, v := range path {
 		switch value := v.(type) {
 		case float64, bool, string:
-			if value == "" {
-				m, ok := source[k]
+			sourceMap, ok = source.(map[string]interface{})
+			if !ok {
+				break
+			}
+			result = sourceMap[k]
+			delete(sourceMap, k)
+		case []interface{}:
+			if k != "" {
+				// array is inside the object
+				// {"foo":[{},{},{}]}
+				sourceMap, ok = source.(map[string]interface{})
 				if !ok {
 					break
 				}
-				resultPath = m
-				delete(source, k)
+				source, ok = sourceMap[k]
+				if !ok {
+					break
+				}
 			}
-		case []interface{}:
-			sourceArr, ok := source[k].([]interface{})
+			// array is a root object
+			// [{},{},{}]
+			sourceArr, ok := source.([]interface{})
 			if !ok {
 				break
 			}
@@ -137,32 +151,29 @@ func extractValue(source, path map[string]interface{}) (map[string]interface{}, 
 
 			m, ok := value[index].(map[string]interface{})
 			if ok {
-				sourceArr[index], resultPath = extractValue(sourceArr[index].(map[string]interface{}), m)
-				source[k] = sourceArr
+				sourceArr[index], result = extractValue(sourceArr[index].(map[string]interface{}), m)
+				sourceMap[k] = sourceArr
 				break
 			}
-
-			resultPath = sourceArr[index]
-			source[k] = sourceArr[:index]
+			result = sourceArr[index]
+			sourceMap[k] = sourceArr[:index]
 			if len(sourceArr) > index {
-				source[k] = append(sourceArr[:index], sourceArr[index+1:]...)
+				sourceMap[k] = append(sourceArr[:index], sourceArr[index+1:]...)
 			}
-
 		case map[string]interface{}:
-			if _, ok := source[k]; !ok {
-				break
-			}
-
-			sourceMap, ok := source[k].(map[string]interface{})
+			sourceMap, ok = source.(map[string]interface{})
 			if !ok {
 				break
 			}
-			source[k], resultPath = extractValue(sourceMap, value)
+			if _, ok := sourceMap[k]; !ok {
+				break
+			}
+			sourceMap[k], result = extractValue(sourceMap[k], value)
 		case nil:
-			source[k] = nil
+			sourceMap[k] = nil
 		}
 	}
-	return source, resultPath
+	return sourceMap, result
 }
 
 func equal(a, b interface{}) bool {

@@ -72,7 +72,7 @@ func (s *Store) New(key, value string) interface{} {
 func (s *Store) Apply(data []byte) ([]byte, error) {
 	path := convert.SliceToMap(strings.Split(s.Value, "."), "")
 
-	event := make(map[string]interface{})
+	var event interface{}
 	if err := json.Unmarshal(data, &event); err != nil {
 		return data, err
 	}
@@ -83,20 +83,32 @@ func (s *Store) Apply(data []byte) ([]byte, error) {
 	return data, nil
 }
 
-func readValue(source, path map[string]interface{}) interface{} {
-	var resultPath interface{}
+func readValue(source interface{}, path map[string]interface{}) interface{} {
+	var result interface{}
 	for k, v := range path {
 		switch value := v.(type) {
 		case float64, bool, string:
-			if value == "" {
-				m, ok := source[k]
+			sourceMap, ok := source.(map[string]interface{})
+			if !ok {
+				break
+			}
+			result = sourceMap[k]
+		case []interface{}:
+			if k != "" {
+				// array is inside the object
+				// {"foo":[{},{},{}]}
+				sourceMap, ok := source.(map[string]interface{})
 				if !ok {
 					break
 				}
-				resultPath = m
+				source, ok = sourceMap[k]
+				if !ok {
+					break
+				}
 			}
-		case []interface{}:
-			sourceArr, ok := source[k].([]interface{})
+			// array is a root object
+			// [{},{},{}]
+			sourceArr, ok := source.([]interface{})
 			if !ok {
 				break
 			}
@@ -105,28 +117,17 @@ func readValue(source, path map[string]interface{}) interface{} {
 			if index >= len(sourceArr) {
 				break
 			}
-
-			m, ok := value[index].(map[string]interface{})
-			if ok {
-				resultPath = readValue(sourceArr[index].(map[string]interface{}), m)
-				break
-			}
-
-			resultPath = sourceArr[index]
-
+			result = readValue(sourceArr[index], value[index].(map[string]interface{}))
 		case map[string]interface{}:
-			if _, ok := source[k]; !ok {
-				break
-			}
-
-			sourceMap, ok := source[k].(map[string]interface{})
+			sourceMap, ok := source.(map[string]interface{})
 			if !ok {
 				break
 			}
-			resultPath = readValue(sourceMap, value)
-		case nil:
-			resultPath = nil
+			if _, ok := sourceMap[k]; !ok {
+				break
+			}
+			result = readValue(sourceMap[k], value)
 		}
 	}
-	return resultPath
+	return result
 }

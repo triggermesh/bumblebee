@@ -72,12 +72,12 @@ func (a *Add) New(key, value string) interface{} {
 // variables into existing JSON.
 func (a *Add) Apply(data []byte) ([]byte, error) {
 	input := convert.SliceToMap(strings.Split(a.Path, "."), a.composeValue())
-	event := make(map[string]interface{})
+	var event interface{}
 	if err := json.Unmarshal(data, &event); err != nil {
 		return data, err
 	}
 
-	result := convert.MergeMaps(event, input)
+	result := convert.MergeJSONWithMap(event, input)
 	output, err := json.Marshal(result)
 	if err != nil {
 		return data, err
