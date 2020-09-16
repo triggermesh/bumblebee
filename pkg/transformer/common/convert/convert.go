@@ -64,43 +64,63 @@ func SliceToMap(path []string, value interface{}) map[string]interface{} {
 	}
 }
 
-// MergeMaps accepts two maps (effectively, JSONs) and merges them together.
+// MergeJSONWithMap accepts interface (effectively, JSON) and a map and merges them together.
 // Source map keys are being overwritten by appendix keys if they overlap.
-func MergeMaps(source, appendix map[string]interface{}) map[string]interface{} {
+func MergeJSONWithMap(source interface{}, appendix map[string]interface{}) interface{} {
 	for k, v := range appendix {
 		switch value := v.(type) {
 		case float64, bool, string, nil:
-			if source == nil {
-				source = make(map[string]interface{})
+			sourceMap, ok := source.(map[string]interface{})
+			if !ok {
+				source = appendix
+				break
 			}
-			source[k] = value
+			if sourceMap == nil {
+				sourceMap = make(map[string]interface{})
+			}
+			sourceMap[k] = value
+			source = sourceMap
 		case []interface{}:
-			sourceArr, ok := source[k].([]interface{})
-			if !ok {
-				source[k] = value
-				return source
-			}
-			resArrLen := len(sourceArr)
-			if len(value) > resArrLen {
-				resArrLen = len(value)
-			}
-			resArr := make([]interface{}, resArrLen)
-			for i := range resArr {
-				if i < len(value) && value[i] != nil {
-					resArr[i] = value[i]
-					continue
+			switch s := source.(type) {
+			case map[string]interface{}:
+				// array is inside the object
+				// {"foo":[{},{},{}]}
+				sourceInterface, ok := s[k]
+				if !ok {
+					s[k] = value
+					source = s
+					break
 				}
-				if i < len(sourceArr) {
-					resArr[i] = sourceArr[i]
+				s[k] = MergeJSONWithMap(sourceInterface, appendix)
+				source = s
+			case []interface{}:
+				// array is a root object
+				// [{},{},{}]
+				resArrLen := len(s)
+				if len(value) > resArrLen {
+					resArrLen = len(value)
 				}
+				resArr := make([]interface{}, resArrLen)
+				for i := range resArr {
+					if i < len(value) && value[i] != nil {
+						resArr[i] = value[i]
+						continue
+					}
+					if i < len(s) {
+						resArr[i] = s[i]
+					}
+				}
+				source = resArr
+			default:
+				source = appendix
 			}
-			source[k] = resArr
 		case map[string]interface{}:
-			m, ok := source[k].(map[string]interface{})
+			sourceMap, ok := source.(map[string]interface{})
 			if !ok {
-				m = make(map[string]interface{})
+				continue
 			}
-			source[k] = MergeMaps(m, value)
+			sourceMap[k] = MergeJSONWithMap(sourceMap[k], value)
+			source = sourceMap
 		}
 	}
 	return source
