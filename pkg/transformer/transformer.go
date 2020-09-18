@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
@@ -70,10 +71,14 @@ func (t *Transformer) Start(ctx context.Context, ceClient cloudevents.Client) er
 }
 
 func (t *Transformer) receiveAndTransform(ctx context.Context, event cloudevents.Event) (*cloudevents.Event, error) {
-	if event.DataContentType() != cloudevents.ApplicationJSON {
-		return &event, nil
+	log.Printf("Received %q event", event.Type())
+	// HTTPTargets sets content type from HTTP headers, i.e.:
+	// "datacontenttype: application/json; charset=utf-8"
+	// so we must use "contains" instead of strict equality
+	if !strings.Contains(event.DataContentType(), cloudevents.ApplicationJSON) {
+		log.Printf("CE Content Type %q is not supported", event.DataContentType())
+		return nil, fmt.Errorf("CE Content Type %q is not supported", event.DataContentType())
 	}
-	log.Printf("Received %q event\n", event.Type())
 
 	localContext := ceContext{
 		EventContextV1: event.Context.AsV1(),
@@ -82,7 +87,8 @@ func (t *Transformer) receiveAndTransform(ctx context.Context, event cloudevents
 
 	localContextBytes, err := json.Marshal(localContext)
 	if err != nil {
-		return &event, fmt.Errorf("cannot encode CE context: %w", err)
+		log.Printf("Cannot encode CE context: %v", err)
+		return nil, fmt.Errorf("cannot encode CE context: %w", err)
 	}
 
 	// Run init step such as load Pipeline variables first
@@ -92,27 +98,33 @@ func (t *Transformer) receiveAndTransform(ctx context.Context, event cloudevents
 	// CE Context transformation
 	localContextBytes, err = t.ContextPipeline.Apply(localContextBytes)
 	if err != nil {
-		return &event, fmt.Errorf("cannot apply transformation on CE context: %w", err)
+		log.Printf("Cannot apply transformation on CE context: %v", err)
+		return nil, fmt.Errorf("cannot apply transformation on CE context: %w", err)
 	}
 
 	if err := json.Unmarshal(localContextBytes, &localContext); err != nil {
-		return &event, fmt.Errorf("cannot decode CE new context: %w", err)
+		log.Printf("Cannot decode CE new context: %v", err)
+		return nil, fmt.Errorf("cannot decode CE new context: %w", err)
 	}
 	event.Context = localContext
 	for k, v := range localContext.Extensions {
 		if err := event.Context.SetExtension(k, v); err != nil {
 			log.Printf("Cannot set CE extension: %v", err)
+			return nil, fmt.Errorf("cannot set CE extension: %w", err)
 		}
 	}
 
 	// CE Data transformation
 	data, err := t.DataPipeline.Apply(event.Data())
 	if err != nil {
-		return &event, fmt.Errorf("cannot apply transformation on CE data: %w", err)
+		log.Printf("Cannot apply transformation on CE data: %v", err)
+		return nil, fmt.Errorf("cannot apply transformation on CE data: %w", err)
 	}
 	if err = event.SetData(cloudevents.ApplicationJSON, data); err != nil {
-		return &event, fmt.Errorf("cannot set data: %w", err)
+		log.Printf("Cannot set data: %v", err)
+		return nil, fmt.Errorf("cannot set data: %w", err)
 	}
 
+	log.Printf("Sending %q event", event.Type())
 	return &event, nil
 }
