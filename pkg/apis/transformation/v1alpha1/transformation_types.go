@@ -64,6 +64,7 @@ type Transform struct {
 	Paths     []Path `json:"paths"`
 }
 
+// Path is a key-value pair that represents JSON object path
 type Path struct {
 	Key   string `json:"key,omitempty"`
 	Value string `json:"value,omitempty"`
@@ -82,6 +83,11 @@ type TransformationStatus struct {
 	// Address holds the information needed to connect this Addressable up to receive events.
 	// +optional
 	Address *duckv1.Addressable `json:"address,omitempty"`
+
+	// CloudEventAttributes are the specific attributes that the Transformation uses
+	// as part of its CloudEvents.
+	// +optional
+	CloudEventAttributes []duckv1.CloudEventAttributes `json:"ceAttributes,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

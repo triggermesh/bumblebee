@@ -162,6 +162,11 @@ func (in *TransformationStatus) DeepCopyInto(out *TransformationStatus) {
 		*out = new(v1.Addressable)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.CloudEventAttributes != nil {
+		in, out := &in.CloudEventAttributes, &out.CloudEventAttributes
+		*out = make([]v1.CloudEventAttributes, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
