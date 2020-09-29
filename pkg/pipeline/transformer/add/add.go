@@ -21,9 +21,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/triggermesh/bumblebee/pkg/transformer/common/convert"
-	"github.com/triggermesh/bumblebee/pkg/transformer/common/storage"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/common/convert"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/common/storage"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer"
 )
+
+var _ transformer.Transformer = (*Add)(nil)
 
 // Add object implements Transformer interface.
 type Add struct {
@@ -43,7 +46,7 @@ var operationName string = "add"
 
 // Register adds this transformation to the map which will
 // be used to create Transformation pipeline.
-func Register(m map[string]interface{}) {
+func Register(m map[string]transformer.Transformer) {
 	m[operationName] = &Add{}
 }
 
@@ -59,7 +62,7 @@ func (a *Add) InitStep() bool {
 }
 
 // New returns a new instance of Add object.
-func (a *Add) New(key, value string) interface{} {
+func (a *Add) New(key, value string) transformer.Transformer {
 	return &Add{
 		Path:  key,
 		Value: value,

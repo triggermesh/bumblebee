@@ -20,9 +20,12 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/triggermesh/bumblebee/pkg/transformer/common/convert"
-	"github.com/triggermesh/bumblebee/pkg/transformer/common/storage"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/common/convert"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/common/storage"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer"
 )
+
+var _ transformer.Transformer = (*Shift)(nil)
 
 // Shift object implements Transformer interface.
 type Shift struct {
@@ -45,7 +48,7 @@ var operationName string = "shift"
 
 // Register adds this transformation to the map which will
 // be used to create Transformation pipeline.
-func Register(m map[string]interface{}) {
+func Register(m map[string]transformer.Transformer) {
 	m[operationName] = &Shift{}
 }
 
@@ -61,7 +64,7 @@ func (s *Shift) InitStep() bool {
 }
 
 // New returns a new instance of Shift object.
-func (s *Shift) New(key, value string) interface{} {
+func (s *Shift) New(key, value string) transformer.Transformer {
 	// doubtful scheme, review needed
 	keys := strings.Split(key, delimeter)
 	if len(keys) != 2 {

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package transformer
+package pipeline
 
 import (
 	"context"
@@ -25,14 +25,20 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
-	"github.com/triggermesh/bumblebee/pkg/transformer/common/storage"
-	"github.com/triggermesh/bumblebee/pkg/transformer/operations"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/common/storage"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer"
 )
 
-// Transformer contains Pipelines for CE Context and Data transformations.
-type Transformer struct {
-	ContextPipeline *operations.Pipeline
-	DataPipeline    *operations.Pipeline
+// TransformPipeline contains Pipelines for CE Context and Data transformations.
+type TransformPipeline struct {
+	ContextPipeline *Pipeline
+	DataPipeline    *Pipeline
+}
+
+// Pipeline is a set of Transformations that are
+// sequentially applied to JSON data.
+type Pipeline struct {
+	Transformers []transformer.Transformer
 }
 
 // ceContext represents CloudEvents context structure but with exported Extensions.
@@ -41,23 +47,23 @@ type ceContext struct {
 	Extensions                  map[string]interface{} `json:"Extensions,omitempty"`
 }
 
-// NewTransformer creates Transformer instance.
-func NewTransformer(context, data []v1alpha1.Transform) (Transformer, error) {
-	contextPipeline, err := operations.New(context)
+// NewTransformPipeline creates TransformPipeline instance.
+func NewTransformPipeline(context, data []v1alpha1.Transform) (TransformPipeline, error) {
+	contextPipeline, err := newPipeline(context)
 	if err != nil {
-		return Transformer{}, err
+		return TransformPipeline{}, err
 	}
 
-	dataPipeline, err := operations.New(data)
+	dataPipeline, err := newPipeline(data)
 	if err != nil {
-		return Transformer{}, err
+		return TransformPipeline{}, err
 	}
 
 	sharedVars := storage.New()
-	contextPipeline.SetStorage(sharedVars)
-	dataPipeline.SetStorage(sharedVars)
+	contextPipeline.setStorage(sharedVars)
+	dataPipeline.setStorage(sharedVars)
 
-	return Transformer{
+	return TransformPipeline{
 		ContextPipeline: contextPipeline,
 		DataPipeline:    dataPipeline,
 	}, nil
@@ -65,12 +71,12 @@ func NewTransformer(context, data []v1alpha1.Transform) (Transformer, error) {
 
 // Start runs CloudEvent receiver and applies transformation Pipeline
 // on incoming events.
-func (t *Transformer) Start(ctx context.Context, ceClient cloudevents.Client) error {
+func (t *TransformPipeline) Start(ctx context.Context, ceClient cloudevents.Client) error {
 	log.Println("Starting CloudEvent receiver")
 	return ceClient.StartReceiver(ctx, t.receiveAndTransform)
 }
 
-func (t *Transformer) receiveAndTransform(ctx context.Context, event cloudevents.Event) (*cloudevents.Event, error) {
+func (t *TransformPipeline) receiveAndTransform(ctx context.Context, event cloudevents.Event) (*cloudevents.Event, error) {
 	log.Printf("Received %q event", event.Type())
 	// HTTPTargets sets content type from HTTP headers, i.e.:
 	// "datacontenttype: application/json; charset=utf-8"
@@ -92,11 +98,11 @@ func (t *Transformer) receiveAndTransform(ctx context.Context, event cloudevents
 	}
 
 	// Run init step such as load Pipeline variables first
-	t.ContextPipeline.InitStep(localContextBytes)
-	t.DataPipeline.InitStep(event.Data())
+	t.ContextPipeline.initStep(localContextBytes)
+	t.DataPipeline.initStep(event.Data())
 
 	// CE Context transformation
-	localContextBytes, err = t.ContextPipeline.Apply(localContextBytes)
+	localContextBytes, err = t.ContextPipeline.apply(localContextBytes)
 	if err != nil {
 		log.Printf("Cannot apply transformation on CE context: %v", err)
 		return nil, fmt.Errorf("cannot apply transformation on CE context: %w", err)
@@ -115,7 +121,7 @@ func (t *Transformer) receiveAndTransform(ctx context.Context, event cloudevents
 	}
 
 	// CE Data transformation
-	data, err := t.DataPipeline.Apply(event.Data())
+	data, err := t.DataPipeline.apply(event.Data())
 	if err != nil {
 		log.Printf("Cannot apply transformation on CE data: %v", err)
 		return nil, fmt.Errorf("cannot apply transformation on CE data: %w", err)
