@@ -215,38 +215,76 @@ The CE with JSON payload being routed to Transformation CR where
 it gets modified according to the Specs and then being routed back
 to sender:
 
+![bumblebee](https://user-images.githubusercontent.com/13515865/94548224-35f97400-0272-11eb-9d22-7dcd1ce0d639.png)
+
+
+## Example
+
+[Sample](config/samples) directory contains two examples, let's walk through one named "multi-target".
+All commands below are idempotent and assuming that your current path is the repository root directory.
+
+First of all, you need to create the Knative Eventing Broker:
+
 ```
-+------------------+        +-------------------+      +------------------+
-| Source           |        |                   |      |Transformation1   |
-+------------------+        |                   +----->-------------------+
-|                  +------->+ Broker            |      | If CE.type is FOO|
-| Pingsource       |        |                   +<-----+ Set KEY1 = VAL1  |
-|                  |        |                   |      | Set CE.type = BAR|
-+------------------+        +-------------------+      +------------------+
-                            If CE.type is READY
-                            Send it to a target        +------------------+
-                                      +                |Transformation2   |
-                            +---------v---------+      +------------------+
-                            | Target            |      | If CE.type is BAR|
-                            +-------------------+      | Set KEY2 = VAL2  |
-                            |                   |      | Set CE.type = BAZ|
-                            | Event+display     |      +------------------+
-                            |                   |
-                            +-------------------+       ...
-                                                       +------------------+
-                                                       |TransformationN   |
-                                                       +------------------+
-                                                       |...               |
-                                                       |                  |
-                                                       |                  |
-                                                       +------------------+
+kubectl apply -f config/samples/broker.yaml
 ```
 
-## Sample
+Next, open [config/samples/multi-target/githubsource.yaml](config/samples/multi-target/githubsource.yaml) and set `accessToken` and `secretToken` values as described in the [documentation](https://knative.dev/docs/eventing/samples/github-source/#create-github-tokens), change `ownerAndRepository` to your Github username and repository you want to track. Create the resources:
 
-[Sample](config/samples) directory contains manifests to deploy
-full set of objects including Broker, Event-display, Triggers and
-Transformation to see how it works.
+```
+kubectl apply -f config/samples/multi-target/githubsource.yaml
+```
+
+After the Gihubsource is created, open [config/samples/multi-target/googlesheet-target.yaml](config/samples/multi-target/googlesheet-target.yaml), paste the [SA JSON key](https://github.com/triggermesh/knative-targets/blob/master/docs/googlesheet.md#prerequisites) into the `googlesheet` Secret `credentials` field, scroll down and update GoogleSheetTarget `id` value as described in the [readme](https://github.com/triggermesh/knative-targets/blob/master/docs/googlesheet.md#creating-a-googlesheet-target). Create the resources:
+
+```
+kubectl apply -f config/samples/multi-target/googlesheet-target.yaml
+```
+
+Now let's edit our second target - [config/samples/multi-target/slack-target.yaml](config/samples/multi-target/slack-target.yaml). `slacktarget` secret needs to have a Slack token which you can obtain by following [this](https://github.com/triggermesh/knative-targets/blob/master/docs/slack.md#creating-the-slack-app-bot-and-token-secret) document. Also, you should specify which Slack channel should receive our messages by setting its name in `slack-transformation` object, line 56. After it's done, create the resources:
+
+```
+kubectl apply -f config/samples/multi-target/slack-target.yaml
+```
+
+The final step is to create the Githubsource events transformations:
+
+```
+kubectl apply -f config/samples/multi-target/github-transformation.yaml
+```
+
+Here is what we essentially created:
+
+![example1](https://user-images.githubusercontent.com/13515865/94557645-a909e700-0280-11eb-868b-6592b6bc8d9c.png)
+
+**(1)** - Gihubsource [githubsource-transformation-demo](config/samples/multi-target/githubsource.yaml) receives the [issues](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/webhook-events-and-payloads#webhook-payload-example-when-someone-edits-an-issue) and the [push](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/webhook-events-and-payloads#webhook-payload-example-33) event webhooks from the Github and sends it to the `transformation-demo` Broker.
+
+**(2)**, **(3)** - [first](config/samples/multi-target/github-transformation.yaml) "layer" of Triggers with Transformations are throwing away all unwanted data, standardizing different Github events into a single format, e.g.:
+
+```
+{
+  "object": "tzununbekov",
+  "subject": "triggermesh/bumblebee",
+  "verb": "created issue \"Transformation tests are failing\"",
+}
+```
+
+Original CloudEvent type changed to a common `io.triggermesh.transformation.github` value.
+
+**(4)**, **(5)** - target-specific Triggers are picking up serialized Github Events and wrapping them into the payloads digestable by the final targets, e.g. [SlackTarget](config/samples/multi-target/slack-target.yaml):
+
+```
+{
+  "channel": "github-events-channel",
+  "text": "tzununbekov at triggermesh/bumblebee: created issue \"Transformation tests are failing\"",
+}
+```
+Types are set to the values to match the corresponding Target Trigger only.
+
+**(6)**, **(7)** - finally, Events are passing through the filters of the Target Triggers and being delivered to its destinations - GoogleSheet table and Slack channel in our case.
+
+At first, this approach may seem a bit cumbersome, but taking into account a number of possible Github [Events](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/webhook-events-and-payloads) multiplied by the number of possible additional Targets and source/target decoupling starts to make a sense.
+
 
 ## Support
 
