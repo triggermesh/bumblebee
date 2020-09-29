@@ -14,60 +14,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package operations
+package pipeline
 
 import (
 	"fmt"
 	"log"
 
 	"github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
-	"github.com/triggermesh/bumblebee/pkg/transformer/common/storage"
-	"github.com/triggermesh/bumblebee/pkg/transformer/operations/add"
-	"github.com/triggermesh/bumblebee/pkg/transformer/operations/delete"
-	"github.com/triggermesh/bumblebee/pkg/transformer/operations/shift"
-	"github.com/triggermesh/bumblebee/pkg/transformer/operations/store"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/common/storage"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer/add"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer/delete"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer/shift"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer/store"
 )
 
-// Transformer is an interface that contains common methods
-// to work with JSON data.
-type Transformer interface {
-	New(string, string) interface{}
-	Apply([]byte) ([]byte, error)
-	SetStorage(*storage.Storage)
-	InitStep() bool
-}
-
-// Pipeline is a set of Transformations that are
-// sequentially applied to JSON data.
-type Pipeline struct {
-	Transformers []Transformer
-}
-
 // register loads available Transformation into a named map.
-func register() map[string]Transformer {
-	m := make(map[string]interface{})
+func register() map[string]transformer.Transformer {
+	transformations := make(map[string]transformer.Transformer)
 
-	add.Register(m)
-	delete.Register(m)
-	shift.Register(m)
-	store.Register(m)
+	add.Register(transformations)
+	delete.Register(transformations)
+	shift.Register(transformations)
+	store.Register(transformations)
 
-	transformations := make(map[string]Transformer)
-	for k, v := range m {
-		transformer, ok := v.(Transformer)
-		if !ok {
-			log.Printf("Operation %q doesn't implement Transformation interface, skipping", k)
-			continue
-		}
-		transformations[k] = transformer
-	}
 	return transformations
 }
 
-// New loads available Transformations and creates a Pipeline.
-func New(transformations []v1alpha1.Transform) (*Pipeline, error) {
+// newPipeline loads available Transformations and creates a Pipeline.
+func newPipeline(transformations []v1alpha1.Transform) (*Pipeline, error) {
 	availableTransformers := register()
-	p := []Transformer{}
+	pipeline := []transformer.Transformer{}
 
 	for _, transformation := range transformations {
 		operation, exist := availableTransformers[transformation.Operation]
@@ -75,26 +52,25 @@ func New(transformations []v1alpha1.Transform) (*Pipeline, error) {
 			return nil, fmt.Errorf("transformation %q not found", transformation.Operation)
 		}
 		for _, kv := range transformation.Paths {
-			tr := operation.New(kv.Key, kv.Value)
-			p = append(p, tr.(Transformer))
+			pipeline = append(pipeline, operation.New(kv.Key, kv.Value))
 			log.Printf("%s: %s", transformation.Operation, kv.Key)
 		}
 	}
 
 	return &Pipeline{
-		Transformers: p,
+		Transformers: pipeline,
 	}, nil
 }
 
 // SetStorage injects shared storage with Pipeline vars.
-func (p *Pipeline) SetStorage(s *storage.Storage) {
+func (p *Pipeline) setStorage(s *storage.Storage) {
 	for _, v := range p.Transformers {
 		v.SetStorage(s)
 	}
 }
 
 // InitStep runs Transformations that are marked as InitStep.
-func (p *Pipeline) InitStep(data []byte) {
+func (p *Pipeline) initStep(data []byte) {
 	for _, v := range p.Transformers {
 		if !v.InitStep() {
 			continue
@@ -106,7 +82,7 @@ func (p *Pipeline) InitStep(data []byte) {
 }
 
 // Apply applies Pipeline transformations.
-func (p *Pipeline) Apply(data []byte) ([]byte, error) {
+func (p *Pipeline) apply(data []byte) ([]byte, error) {
 	var err error
 	for _, v := range p.Transformers {
 		if v.InitStep() {

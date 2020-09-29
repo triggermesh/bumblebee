@@ -25,7 +25,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 
 	"github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
-	"github.com/triggermesh/bumblebee/pkg/transformer"
+	"github.com/triggermesh/bumblebee/pkg/pipeline"
 )
 
 const (
@@ -40,22 +40,24 @@ func main() {
 
 	envvar, _ := os.LookupEnv(envVarName)
 	if envvar == "" {
-		log.Fatal("transformation spec is empty")
+		log.Fatal("Transformation spec is empty")
 	}
 
 	var transformations v1alpha1.TransformationSpec
 
 	if err = json.Unmarshal([]byte(envvar), &transformations); err != nil {
-		log.Fatalf("cannot unmarshal env: %v", err)
+		log.Fatalf("Cannot unmarshal env: %v", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	transformer, err := transformer.NewTransformer(transformations.Context, transformations.Data)
+	handler, err := pipeline.NewTransformPipeline(transformations.Context, transformations.Data)
 	if err != nil {
-		log.Fatalf("cannot create transformation pipeline: %v", err)
+		log.Fatalf("Cannot create transformation pipeline: %v", err)
 	}
 
-	log.Fatalf("Cannot start transformation listener: %v", transformer.Start(ctx, ceClient))
+	if err := handler.Start(ctx, ceClient); err != nil {
+		log.Fatalf("Transformation pipeline handler: %v", err)
+	}
 }

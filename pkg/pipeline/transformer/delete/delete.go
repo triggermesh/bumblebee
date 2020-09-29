@@ -22,8 +22,11 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/triggermesh/bumblebee/pkg/transformer/common/storage"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/common/storage"
+	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer"
 )
+
+var _ transformer.Transformer = (*Delete)(nil)
 
 // Delete object implements Transformer interface.
 type Delete struct {
@@ -44,7 +47,7 @@ var operationName string = "delete"
 
 // Register adds this transformation to the map which will
 // be used to create Transformation pipeline.
-func Register(m map[string]interface{}) {
+func Register(m map[string]transformer.Transformer) {
 	m[operationName] = &Delete{}
 }
 
@@ -60,7 +63,7 @@ func (d *Delete) InitStep() bool {
 }
 
 // New returns a new instance of Delete object.
-func (d *Delete) New(key, value string) interface{} {
+func (d *Delete) New(key, value string) transformer.Transformer {
 	return &Delete{
 		Path:  key,
 		Value: value,
