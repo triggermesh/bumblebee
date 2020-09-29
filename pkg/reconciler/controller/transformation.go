@@ -153,18 +153,22 @@ func (r *Reconciler) reconcile(ctx context.Context, t *transformationv1alpha1.Tr
 }
 
 func (r *Reconciler) createCloudEventAttributes(ts *transformationv1alpha1.TransformationSpec) []duckv1.CloudEventAttributes {
-	// Transformation can produce CloudEvents with only one Type and Source
-	ceAttributes := make([]duckv1.CloudEventAttributes, 0, 1)
+	ceAttributes := make([]duckv1.CloudEventAttributes, 0)
 	for _, item := range ts.Context {
 		if item.Operation == "add" {
+			attribute := duckv1.CloudEventAttributes{}
 			for _, path := range item.Paths {
-				if path.Key == "type" {
-					ceAttributes[0].Type = path.Value
-				}
-				if path.Key == "source" {
-					ceAttributes[0].Source = path.Value
+				switch path.Key {
+				case "type":
+					attribute.Type = path.Value
+				case "source":
+					attribute.Source = path.Value
 				}
 			}
+			if attribute.Source != "" || attribute.Type != "" {
+				ceAttributes = append(ceAttributes, attribute)
+			}
+			break
 		}
 	}
 	return ceAttributes
