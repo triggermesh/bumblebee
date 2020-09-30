@@ -221,7 +221,7 @@ to sender:
 ## Example
 
 [Sample](config/samples) directory contains two examples, let's walk through one named "multi-target".
-All commands below are idempotent and assuming that your current path is the repository root directory.
+All commands below are idempotent and assume that your current path is the repository root directory.
 
 First of all, you need to create the Knative Eventing Broker:
 
@@ -235,13 +235,13 @@ Next, open [config/samples/multi-target/githubsource.yaml](config/samples/multi-
 kubectl apply -f config/samples/multi-target/githubsource.yaml
 ```
 
-After the Gihubsource is created, open [config/samples/multi-target/googlesheet-target.yaml](config/samples/multi-target/googlesheet-target.yaml), paste the [SA JSON key](https://github.com/triggermesh/knative-targets/blob/master/docs/googlesheet.md#prerequisites) into the `googlesheet` Secret `credentials` field, scroll down and update GoogleSheetTarget `id` value as described in the [readme](https://github.com/triggermesh/knative-targets/blob/master/docs/googlesheet.md#creating-a-googlesheet-target). Create the resources:
+After the Github source is created, open [config/samples/multi-target/googlesheet-target.yaml](config/samples/multi-target/googlesheet-target.yaml), paste the [credentials JSON key](https://github.com/triggermesh/knative-targets/blob/master/docs/googlesheet.md#prerequisites) into the `googlesheet` Secret's `credentials` field, scroll down and update GoogleSheetTarget `id` value as described in the [readme](https://github.com/triggermesh/knative-targets/blob/master/docs/googlesheet.md#creating-a-googlesheet-target). Create the resources:
 
 ```
 kubectl apply -f config/samples/multi-target/googlesheet-target.yaml
 ```
 
-Now let's edit our second target - [config/samples/multi-target/slack-target.yaml](config/samples/multi-target/slack-target.yaml). `slacktarget` secret needs to have a Slack token which you can obtain by following [this](https://github.com/triggermesh/knative-targets/blob/master/docs/slack.md#creating-the-slack-app-bot-and-token-secret) document. Also, you should specify which Slack channel should receive our messages by setting its name in `slack-transformation` object, line 56. After it's done, create the resources:
+Now let's edit our second target - [config/samples/multi-target/slack-target.yaml](config/samples/multi-target/slack-target.yaml). The `slacktarget` secret needs to have a Slack token which you can obtain by following [this](https://github.com/triggermesh/knative-targets/blob/master/docs/slack.md#creating-the-slack-app-bot-and-token-secret) document. Also, you should specify which Slack channel should receive our messages by setting its name in the `slack-transformation` object, line 56. After it's done, create the resources:
 
 ```
 kubectl apply -f config/samples/multi-target/slack-target.yaml
@@ -283,8 +283,7 @@ Types are set to the values to match the corresponding Target Trigger only.
 
 **(6)**, **(7)** - finally, Events are passing through the filters of the Target Triggers and being delivered to its destinations - GoogleSheet table and Slack channel in our case.
 
-At first, this approach may seem a bit cumbersome, but taking into account a number of possible Github [Events](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/webhook-events-and-payloads) multiplied by the number of possible additional Targets and source/target decoupling starts to make a sense.
-
+At first, this approach may seem a bit cumbersome, but taking into account a number of possible Github [Events](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/webhook-events-and-payloads) multiplied by the number of possible additional Targets, decoupling producer from consumer starts to make sense.
 
 ## Support
 
