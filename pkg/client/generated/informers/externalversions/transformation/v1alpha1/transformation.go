@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	time "time"
 
 	transformationv1alpha1 "github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
@@ -61,13 +62,13 @@ func NewFilteredTransformationInformer(client internalclientset.Interface, names
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.FlowV1alpha1().Transformations(namespace).List(options)
+				return client.FlowV1alpha1().Transformations(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.FlowV1alpha1().Transformations(namespace).Watch(options)
+				return client.FlowV1alpha1().Transformations(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&transformationv1alpha1.Transformation{},
