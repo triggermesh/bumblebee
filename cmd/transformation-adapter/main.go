@@ -20,44 +20,47 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"os"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/kelseyhightower/envconfig"
 
 	"github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
 	"github.com/triggermesh/bumblebee/pkg/pipeline"
 )
 
-const (
-	envVarName = "transformSpec"
-)
+type envConfig struct {
+	// Sink URL where to send cloudevents
+	Sink string `envconfig:"K_SINK"`
+
+	// Transformation specifications
+	TransformationContext string `envconfig:"TRANSFORMATION_CONTEXT"`
+	TransformationData    string `envconfig:"TRANSFORMATION_DATA"`
+}
 
 func main() {
-	ceClient, err := cloudevents.NewDefaultClient()
-	if err != nil {
-		log.Fatal("Failed to create client, ", err)
-	}
-
-	envvar, _ := os.LookupEnv(envVarName)
-	if envvar == "" {
-		log.Fatal("Transformation spec is empty")
-	}
-
-	var transformations v1alpha1.TransformationSpec
-
-	if err = json.Unmarshal([]byte(envvar), &transformations); err != nil {
-		log.Fatalf("Cannot unmarshal env: %v", err)
+	var env envConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Fatalf("Failed to process env var: %v", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	handler, err := pipeline.NewTransformPipeline(transformations.Context, transformations.Data)
+	trnContext, trnData := []v1alpha1.Transform{}, []v1alpha1.Transform{}
+	err := json.Unmarshal([]byte(env.TransformationContext), &trnContext)
 	if err != nil {
-		log.Fatalf("Cannot create transformation pipeline: %v", err)
+		log.Fatalf("Cannot unmarshal Context Transformation variable: %v", err)
+	}
+	err = json.Unmarshal([]byte(env.TransformationData), &trnData)
+	if err != nil {
+		log.Fatalf("Cannot unmarshal Data Transformation variable: %v", err)
 	}
 
-	if err := handler.Start(ctx, ceClient); err != nil {
-		log.Fatalf("Transformation pipeline handler: %v", err)
+	handler, err := pipeline.NewHandler(trnContext, trnData)
+	if err != nil {
+		log.Fatalf("Cannot create transformation handler: %v", err)
+	}
+
+	if err := handler.Start(ctx, env.Sink); err != nil {
+		log.Fatalf("Transformation handler: %v", err)
 	}
 }

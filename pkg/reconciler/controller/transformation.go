@@ -19,6 +19,8 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"reflect"
 
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -29,7 +31,9 @@ import (
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/network"
 	"knative.dev/pkg/reconciler"
+	"knative.dev/pkg/resolver"
 	"knative.dev/pkg/tracker"
+	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	servingv1client "knative.dev/serving/pkg/client/clientset/versioned"
 	servingv1listers "knative.dev/serving/pkg/client/listers/serving/v1"
 
@@ -39,7 +43,9 @@ import (
 )
 
 const (
-	envVarName = "transformSpec"
+	envSink               = "K_SINK"
+	envTransformationCtx  = "TRANSFORMATION_CONTEXT"
+	envTransformationData = "TRANSFORMATION_DATA"
 )
 
 // newReconciledNormal makes a new reconciler event with event type Normal, and
@@ -59,6 +65,8 @@ type Reconciler struct {
 	knServiceLister  servingv1listers.ServiceLister
 	servingClientSet servingv1client.Interface
 
+	sinkResolver *resolver.URIResolver
+
 	transformerImage string
 }
 
@@ -66,90 +74,97 @@ type Reconciler struct {
 var _ transformationreconciler.Interface = (*Reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
-func (r *Reconciler) ReconcileKind(ctx context.Context, t *transformationv1alpha1.Transformation) reconciler.Event {
+func (r *Reconciler) ReconcileKind(ctx context.Context, trn *transformationv1alpha1.Transformation) reconciler.Event {
 	logger := logging.FromContext(ctx)
 
 	if err := r.Tracker.TrackReference(tracker.Reference{
 		APIVersion: "serving.knative.dev/v1",
 		Kind:       "Service",
-		Name:       t.Name,
-		Namespace:  t.Namespace,
-	}, t); err != nil {
-		logger.Errorf("Error tracking service %s: %v", t.Name, err)
+		Name:       trn.Name,
+		Namespace:  trn.Namespace,
+	}, trn); err != nil {
+		logger.Errorf("Error tracking service %s: %v", trn.Name, err)
 		return err
 	}
 
-	// Reconcile Transformation and then write back any status updates regardless of
-	// whether the reconcile error out.
-	reconcileErr := r.reconcile(ctx, t)
-	if reconcileErr != nil {
-		logger.Error("Error reconciling Transformation", zap.Error(reconcileErr))
-		return reconcileErr
-	}
-
-	logger.Debug("Transformation reconciled")
-	return newReconciledNormal(t.Namespace, t.Name)
-}
-
-func (r *Reconciler) reconcile(ctx context.Context, t *transformationv1alpha1.Transformation) error {
-	logger := logging.FromContext(ctx)
-
-	trn, err := json.Marshal(t.Spec)
+	// Reconcile Transformation Adapter
+	ksvc, err := r.reconcileKnService(ctx, trn)
 	if err != nil {
-		logger.Errorf("Cannot encode transformation spec: %v", err)
-		return nil
-	}
-
-	svc, err := r.knServiceLister.Services(t.Namespace).Get(t.Name)
-	if apierrs.IsNotFound(err) {
-		svc = resources.NewKnService(t.Namespace, t.Name,
-			resources.Image(r.transformerImage),
-			resources.EnvVar(envVarName, string(trn)),
-			resources.KsvcLabelVisibilityClusterLocal(),
-			resources.Owner(t),
-		)
-		_, err := r.servingClientSet.ServingV1().Services(t.Namespace).Create(svc)
-		if err != nil {
-			logger.Errorf("Cannot create kn service: %v", err)
-			t.Status.MarkServiceUnavailable(t.Name)
-			return err
-		}
-		logger.Info("Kn service created")
-		return nil
-	} else if err != nil {
-		logger.Errorf("Error reconciling service %s: %v", t.Name, err)
+		logger.Error("Error reconciling Kn Service", zap.Error(err))
+		trn.Status.MarkServiceUnavailable(trn.Name)
 		return err
 	}
 
-	if !resources.KnServiceHasEnvVar(svc, envVarName, string(trn)) ||
-		!resources.KnServiceImage(svc, r.transformerImage) {
-		logger.Info("Kn service spec outdated, updating service")
-		newSvc := resources.NewKnService(t.Namespace, t.Name,
-			resources.Image(r.transformerImage),
-			resources.EnvVar(envVarName, string(trn)),
-			resources.KsvcLabelVisibilityClusterLocal(),
-		)
-		svc.Spec = newSvc.Spec
-		_, err := r.servingClientSet.ServingV1().Services(t.Namespace).Update(svc)
-		if err != nil {
-			logger.Errorf("Cannot update kn service: %v", err)
-			t.Status.MarkServiceUnavailable(t.Name)
-			return err
-		}
-	}
-
-	if svc.IsReady() {
-		t.Status.Address = &duckv1.Addressable{
+	if ksvc.IsReady() {
+		trn.Status.Address = &duckv1.Addressable{
 			URL: &apis.URL{
 				Scheme: "http",
-				Host:   network.GetServiceHostname(t.Name, t.Namespace),
+				Host:   network.GetServiceHostname(trn.Name, trn.Namespace),
 			},
 		}
-		t.Status.MarkServiceAvailable()
+		trn.Status.MarkServiceAvailable()
 	}
-	t.Status.CloudEventAttributes = r.createCloudEventAttributes(&t.Spec)
+	trn.Status.CloudEventAttributes = r.createCloudEventAttributes(&trn.Spec)
 
-	return nil
+	logger.Debug("Transformation reconciled")
+	return newReconciledNormal(trn.Namespace, trn.Name)
+}
+
+func (r *Reconciler) reconcileKnService(ctx context.Context, trn *transformationv1alpha1.Transformation) (*servingv1.Service, error) {
+	logger := logging.FromContext(ctx)
+
+	dest := trn.Spec.Sink.DeepCopy()
+	if dest.Ref != nil {
+		// To call URIFromDestination(), dest.Ref must have a Namespace. If there is
+		// no Namespace defined in dest.Ref, we will use the Namespace of the source
+		// as the Namespace of dest.Ref.
+		if dest.Ref.Namespace == "" {
+			dest.Ref.Namespace = trn.GetNamespace()
+		}
+	}
+
+	var sink string
+	uri, err := r.sinkResolver.URIFromDestinationV1(*dest, trn)
+	if err != nil {
+		logger.Infof("Sink resolution error: %v", err)
+	} else {
+		trn.Status.SinkURI = uri
+		sink = uri.String()
+	}
+
+	trnContext, err := json.Marshal(trn.Spec.Context)
+	if err != nil {
+		return nil, fmt.Errorf("cannot marshal context transformation spec: %w", err)
+	}
+
+	trnData, err := json.Marshal(trn.Spec.Data)
+	if err != nil {
+		return nil, fmt.Errorf("cannot marshal data transformation spec: %w", err)
+	}
+
+	expectedKsvc := resources.NewKnService(trn.Namespace, trn.Name,
+		resources.Image(r.transformerImage),
+		resources.EnvVar(envTransformationCtx, string(trnContext)),
+		resources.EnvVar(envTransformationData, string(trnData)),
+		resources.EnvVar(envSink, sink),
+		resources.KsvcLabelVisibilityClusterLocal(),
+		resources.Owner(trn),
+	)
+
+	ksvc, err := r.knServiceLister.Services(trn.Namespace).Get(trn.Name)
+	if apierrs.IsNotFound(err) {
+		logger.Infof("Creating Kn Service %q", trn.Name)
+		return r.servingClientSet.ServingV1().Services(trn.Namespace).Create(expectedKsvc)
+	} else if err != nil {
+		return nil, err
+	}
+
+	if !reflect.DeepEqual(ksvc.Spec.ConfigurationSpec.Template.Spec,
+		expectedKsvc.Spec.ConfigurationSpec.Template.Spec) {
+		ksvc.Spec = expectedKsvc.Spec
+		return r.servingClientSet.ServingV1().Services(trn.Namespace).Update(ksvc)
+	}
+	return ksvc, nil
 }
 
 func (r *Reconciler) createCloudEventAttributes(ts *transformationv1alpha1.TransformationSpec) []duckv1.CloudEventAttributes {

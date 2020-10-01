@@ -3,6 +3,11 @@ kind: Transformation
 metadata:
   name: pingsource-transformation
 spec:
+  # sink:
+  #   ref:
+  #     apiVersion: serving.knative.dev/v1
+  #     kind: Service
+  #     name: event-display
   context:
   - operation: store
     paths:
