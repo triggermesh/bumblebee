@@ -40,13 +40,15 @@ func (ts *TransformationStatus) InitializeConditions() {
 	condSet.Manage(ts).InitializeConditions()
 }
 
+// MarkServiceUnavailable marks Transformation as not ready with ServiceUnavailable reason.
 func (ts *TransformationStatus) MarkServiceUnavailable(name string) {
 	condSet.Manage(ts).MarkFalse(
 		TransformationConditionReady,
 		"ServiceUnavailable",
-		"Service %q wasn't found.", name)
+		"Service %q is not ready.", name)
 }
 
+// MarkServiceAvailable sets Transformation condition to ready.
 func (ts *TransformationStatus) MarkServiceAvailable() {
 	condSet.Manage(ts).MarkTrue(TransformationConditionReady)
 }

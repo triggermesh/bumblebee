@@ -29,6 +29,12 @@ import (
 	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer/store"
 )
 
+// Pipeline is a set of Transformations that are
+// sequentially applied to JSON data.
+type Pipeline struct {
+	Transformers []transformer.Transformer
+}
+
 // register loads available Transformation into a named map.
 func register() map[string]transformer.Transformer {
 	transformations := make(map[string]transformer.Transformer)

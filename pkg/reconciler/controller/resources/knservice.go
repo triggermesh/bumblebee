@@ -105,22 +105,6 @@ func firstContainer(svc *servingv1.Service) *corev1.Container {
 	return &(*containers)[0]
 }
 
-// KnServiceHasEnvVar returns true if kn service has provided env variable
-// and false otherwise.
-func KnServiceHasEnvVar(svc *servingv1.Service, name, value string) bool {
-	for _, env := range svc.Spec.GetTemplate().Spec.GetContainer().Env {
-		if env.Name == name && env.Value == value {
-			return true
-		}
-	}
-	return false
-}
-
-// KnServiceImage return true if kn service image value equal to provided string.
-func KnServiceImage(svc *servingv1.Service, image string) bool {
-	return svc.Spec.GetTemplate().Spec.GetContainer().Image == image
-}
-
 // KsvcLabelVisibilityClusterLocal sets label to avoid exposing the service externally.
 func KsvcLabelVisibilityClusterLocal() Option {
 	return func(svc *servingv1.Service) {

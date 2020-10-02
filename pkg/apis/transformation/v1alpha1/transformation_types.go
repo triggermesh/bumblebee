@@ -54,8 +54,12 @@ var (
 
 // TransformationSpec holds the desired state of the Transformation (from the client).
 type TransformationSpec struct {
+	// Sink is a reference to an object that will resolve to a uri to use as the sink.
+	Sink duckv1.Destination `json:"sink,omitempty"`
+	// Context contains Transformations that must be applied on CE Context
 	Context []Transform `json:"context,omitempty"`
-	Data    []Transform `json:"data,omitempty"`
+	// Data contains Transformations that must be applied on CE Data
+	Data []Transform `json:"data,omitempty"`
 }
 
 // Transform describes transformation schemes for different CE types.
@@ -78,16 +82,11 @@ const (
 
 // TransformationStatus communicates the observed state of the Transformation (from the controller).
 type TransformationStatus struct {
-	duckv1.Status `json:",inline"`
+	duckv1.SourceStatus `json:",inline"`
 
 	// Address holds the information needed to connect this Addressable up to receive events.
 	// +optional
 	Address *duckv1.Addressable `json:"address,omitempty"`
-
-	// CloudEventAttributes are the specific attributes that the Transformation uses
-	// as part of its CloudEvents.
-	// +optional
-	CloudEventAttributes []duckv1.CloudEventAttributes `json:"ceAttributes,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

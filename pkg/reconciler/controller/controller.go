@@ -24,6 +24,7 @@ import (
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
+	"knative.dev/pkg/resolver"
 	"knative.dev/pkg/tracker"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	servingv1client "knative.dev/serving/pkg/client/injection/client"
@@ -64,6 +65,8 @@ func NewController(
 
 	impl := transformationreconciler.NewImpl(ctx, r)
 	r.Tracker = tracker.New(impl.EnqueueKey, controller.GetTrackerLease(ctx))
+
+	r.sinkResolver = resolver.NewURIResolver(ctx, impl.EnqueueKey)
 
 	logger.Info("Setting up event handlers.")
 

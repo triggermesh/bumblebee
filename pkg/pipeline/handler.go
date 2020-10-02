@@ -24,21 +24,17 @@ import (
 	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+
 	"github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
 	"github.com/triggermesh/bumblebee/pkg/pipeline/common/storage"
-	"github.com/triggermesh/bumblebee/pkg/pipeline/transformer"
 )
 
-// TransformPipeline contains Pipelines for CE Context and Data transformations.
-type TransformPipeline struct {
+// Handler contains Pipelines for CE transformations and CloudEvents client.
+type Handler struct {
 	ContextPipeline *Pipeline
 	DataPipeline    *Pipeline
-}
 
-// Pipeline is a set of Transformations that are
-// sequentially applied to JSON data.
-type Pipeline struct {
-	Transformers []transformer.Transformer
+	client cloudevents.Client
 }
 
 // ceContext represents CloudEvents context structure but with exported Extensions.
@@ -47,36 +43,62 @@ type ceContext struct {
 	Extensions                  map[string]interface{} `json:"Extensions,omitempty"`
 }
 
-// NewTransformPipeline creates TransformPipeline instance.
-func NewTransformPipeline(context, data []v1alpha1.Transform) (TransformPipeline, error) {
+// NewHandler creates Handler instance.
+func NewHandler(context, data []v1alpha1.Transform) (Handler, error) {
 	contextPipeline, err := newPipeline(context)
 	if err != nil {
-		return TransformPipeline{}, err
+		return Handler{}, err
 	}
 
 	dataPipeline, err := newPipeline(data)
 	if err != nil {
-		return TransformPipeline{}, err
+		return Handler{}, err
 	}
 
 	sharedVars := storage.New()
 	contextPipeline.setStorage(sharedVars)
 	dataPipeline.setStorage(sharedVars)
 
-	return TransformPipeline{
+	ceClient, err := cloudevents.NewDefaultClient()
+	if err != nil {
+		return Handler{}, err
+	}
+
+	return Handler{
 		ContextPipeline: contextPipeline,
 		DataPipeline:    dataPipeline,
+
+		client: ceClient,
 	}, nil
 }
 
 // Start runs CloudEvent receiver and applies transformation Pipeline
 // on incoming events.
-func (t *TransformPipeline) Start(ctx context.Context, ceClient cloudevents.Client) error {
+func (t *Handler) Start(ctx context.Context, sink string) error {
 	log.Println("Starting CloudEvent receiver")
-	return ceClient.StartReceiver(ctx, t.receiveAndTransform)
+	var receiver interface{}
+	receiver = t.receiveAndReply
+	if sink != "" {
+		ctx = cloudevents.ContextWithTarget(ctx, sink)
+		receiver = t.receiveAndSend
+	}
+
+	return t.client.StartReceiver(ctx, receiver)
 }
 
-func (t *TransformPipeline) receiveAndTransform(ctx context.Context, event cloudevents.Event) (*cloudevents.Event, error) {
+func (t *Handler) receiveAndReply(event cloudevents.Event) (*cloudevents.Event, error) {
+	return t.applyTransformations(event)
+}
+
+func (t *Handler) receiveAndSend(ctx context.Context, event cloudevents.Event) error {
+	result, err := t.applyTransformations(event)
+	if err != nil {
+		return err
+	}
+	return t.client.Send(ctx, *result)
+}
+
+func (t *Handler) applyTransformations(event cloudevents.Event) (*cloudevents.Event, error) {
 	log.Printf("Received %q event", event.Type())
 	// HTTPTargets sets content type from HTTP headers, i.e.:
 	// "datacontenttype: application/json; charset=utf-8"
