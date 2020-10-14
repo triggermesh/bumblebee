@@ -66,61 +66,49 @@ func SliceToMap(path []string, value interface{}) map[string]interface{} {
 
 // MergeJSONWithMap accepts interface (effectively, JSON) and a map and merges them together.
 // Source map keys are being overwritten by appendix keys if they overlap.
-func MergeJSONWithMap(source interface{}, appendix map[string]interface{}) interface{} {
-	for k, v := range appendix {
-		switch value := v.(type) {
-		case float64, bool, string, nil:
-			sourceMap, ok := source.(map[string]interface{})
-			if !ok {
-				source = appendix
-				break
-			}
-			if sourceMap == nil {
-				sourceMap = make(map[string]interface{})
-			}
-			sourceMap[k] = value
-			source = sourceMap
-		case []interface{}:
-			switch s := source.(type) {
-			case map[string]interface{}:
-				// array is inside the object
-				// {"foo":[{},{},{}]}
-				sourceInterface, ok := s[k]
-				if !ok {
-					s[k] = value
-					source = s
-					break
-				}
-				s[k] = MergeJSONWithMap(sourceInterface, appendix)
-				source = s
-			case []interface{}:
-				// array is a root object
-				// [{},{},{}]
-				resArrLen := len(s)
-				if len(value) > resArrLen {
-					resArrLen = len(value)
-				}
-				resArr := make([]interface{}, resArrLen)
-				for i := range resArr {
-					if i < len(value) && value[i] != nil {
-						resArr[i] = value[i]
-						continue
-					}
-					if i < len(s) {
-						resArr[i] = s[i]
-					}
-				}
-				source = resArr
-			default:
-				source = appendix
-			}
-		case map[string]interface{}:
-			sourceMap, ok := source.(map[string]interface{})
-			if !ok {
+func MergeJSONWithMap(source, appendix interface{}) interface{} {
+	switch appendixValue := appendix.(type) {
+	case float64, bool, string, nil:
+		return appendixValue
+	case []interface{}:
+		sourceInterface, ok := source.([]interface{})
+		if !ok {
+			return appendixValue
+		}
+		resArrLen := len(sourceInterface)
+		if len(appendixValue) > resArrLen {
+			resArrLen = len(appendixValue)
+		}
+		resArr := make([]interface{}, resArrLen)
+		for i := range resArr {
+			if i < len(appendixValue) && appendixValue[i] != nil {
+				resArr[i] = appendixValue[i]
 				continue
 			}
-			sourceMap[k] = MergeJSONWithMap(sourceMap[k], value)
-			source = sourceMap
+			if i < len(sourceInterface) {
+				resArr[i] = sourceInterface[i]
+			}
+		}
+		source = resArr
+	case map[string]interface{}:
+		switch s := source.(type) {
+		case nil:
+			source = make(map[string]interface{})
+			return MergeJSONWithMap(source, appendixValue)
+		case map[string]interface{}:
+			for k, v := range appendixValue {
+				if k == "" {
+					return MergeJSONWithMap(s, v)
+				}
+				s[k] = MergeJSONWithMap(s[k], v)
+			}
+			source = s
+		case []interface{}:
+			for k, v := range appendixValue {
+				if k == "" {
+					return MergeJSONWithMap(s, v)
+				}
+			}
 		}
 	}
 	return source
