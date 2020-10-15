@@ -22,7 +22,7 @@ import (
 
 	network "knative.dev/networking/pkg"
 	"knative.dev/pkg/kmeta"
-	"knative.dev/serving/pkg/apis/serving"
+	serving "knative.dev/serving/pkg/apis/serving"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
@@ -111,10 +111,12 @@ func KsvcLabelVisibilityClusterLocal() Option {
 	return func(svc *servingv1.Service) {
 		if svc.Labels != nil {
 			svc.Labels[network.VisibilityLabelKey] = serving.VisibilityClusterLocal
+			svc.Labels[serving.VisibilityLabelKeyObsolete] = serving.VisibilityClusterLocal
 			return
 		}
 		labels := map[string]string{
-			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
+			network.VisibilityLabelKey:         serving.VisibilityClusterLocal,
+			serving.VisibilityLabelKeyObsolete: serving.VisibilityClusterLocal,
 		}
 		svc.Labels = labels
 	}

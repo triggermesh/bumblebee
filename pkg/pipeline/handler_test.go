@@ -24,7 +24,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/stretchr/testify/assert"
-	adaptertest "knative.dev/eventing/pkg/adapter/v2/test"
 
 	"github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
 )
@@ -36,23 +35,22 @@ var availableTransformations = []v1alpha1.Transform{
 	{Operation: "delete"},
 }
 
-func TestNewTransformPipeline(t *testing.T) {
-	_, err := NewTransformPipeline(availableTransformations, availableTransformations)
+func TestNewHandler(t *testing.T) {
+	_, err := NewHandler(availableTransformations, availableTransformations)
 	assert.NoError(t, err)
 }
 
 func TestStart(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	ceClient := adaptertest.NewTestClient()
 
-	pipeline, err := NewTransformPipeline(availableTransformations, availableTransformations)
+	pipeline, err := NewHandler(availableTransformations, availableTransformations)
 	assert.NoError(t, err)
 
 	errChan := make(chan error)
 
 	go func() {
 		defer close(errChan)
-		errChan <- pipeline.Start(ctx, ceClient)
+		errChan <- pipeline.Start(ctx, "")
 	}()
 
 	cancel()
@@ -222,10 +220,10 @@ func TestReceiveAndTransform(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			pipeline, err := NewTransformPipeline([]v1alpha1.Transform{}, tc.data)
+			pipeline, err := NewHandler([]v1alpha1.Transform{}, tc.data)
 			assert.NoError(t, err)
 
-			transformedEvent, err := pipeline.receiveAndTransform(context.Background(), tc.originalEvent)
+			transformedEvent, err := pipeline.applyTransformations(tc.originalEvent)
 			assert.NoError(t, err)
 
 			assert.Equal(t, tc.expectedEventData, string(transformedEvent.Data()))

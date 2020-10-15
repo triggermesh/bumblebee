@@ -101,14 +101,11 @@ func TestMergeJSONWithMap(t *testing.T) {
 		}, {
 			source:   `{"old":"value"}`,
 			appendix: "[1].foo.bar",
-			result: map[string]interface{}{
-				"": []interface{}{
-					nil,
-					map[string]interface{}{
-						"foo": "bar",
-					},
+			result: []interface{}{
+				nil,
+				map[string]interface{}{
+					"foo": "bar",
 				},
-				"old": "value",
 			},
 		},
 	}
