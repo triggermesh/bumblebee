@@ -25,6 +25,7 @@ import (
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -124,7 +125,7 @@ func (r *Reconciler) reconcileKnService(ctx context.Context, trn *transformation
 	}
 
 	var sink string
-	uri, err := r.sinkResolver.URIFromDestinationV1(*dest, trn)
+	uri, err := r.sinkResolver.URIFromDestinationV1(ctx, *dest, trn)
 	if err != nil {
 		logger.Infof("Sink resolution error: %v", err)
 	} else {
@@ -154,7 +155,7 @@ func (r *Reconciler) reconcileKnService(ctx context.Context, trn *transformation
 	ksvc, err := r.knServiceLister.Services(trn.Namespace).Get(trn.Name)
 	if apierrs.IsNotFound(err) {
 		logger.Infof("Creating Kn Service %q", trn.Name)
-		return r.servingClientSet.ServingV1().Services(trn.Namespace).Create(expectedKsvc)
+		return r.servingClientSet.ServingV1().Services(trn.Namespace).Create(ctx, expectedKsvc, v1.CreateOptions{})
 	} else if err != nil {
 		return nil, err
 	}
@@ -162,7 +163,7 @@ func (r *Reconciler) reconcileKnService(ctx context.Context, trn *transformation
 	if !reflect.DeepEqual(ksvc.Spec.ConfigurationSpec.Template.Spec,
 		expectedKsvc.Spec.ConfigurationSpec.Template.Spec) {
 		ksvc.Spec = expectedKsvc.Spec
-		return r.servingClientSet.ServingV1().Services(trn.Namespace).Update(ksvc)
+		return r.servingClientSet.ServingV1().Services(trn.Namespace).Update(ctx, ksvc, v1.UpdateOptions{})
 	}
 	return ksvc, nil
 }
