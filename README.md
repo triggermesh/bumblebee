@@ -1,10 +1,10 @@
-# Transformation prototype
+# CloudEvents Transformation
 
 Transformation is an addressable CR based on Knative Serving 
 aimed on flexible CloudEvents modifications. When you create 
 Transformation object controller creates Knative Service that 
 accepts CloudEvents, applies transformation and replies with 
-new CloudEvent.
+new CloudEvent or forwards it to another addressable resource.
 
 Current Transformation engine support following basic operations
 
@@ -46,7 +46,7 @@ spec:
 Recursively remove all keys with specified value.
 
 ```yaml
-spec
+spec:
   data:
   - operation: delete
     paths:
@@ -59,7 +59,7 @@ Delete everything. Useful for composing completely new CE
 using stored variables.
 
 ```yaml
-spec
+spec:
   data:
   - operation: delete
     paths:
@@ -87,8 +87,7 @@ spec:
 
 ##### Example 2
 
-Create a new object with nested structure. Value "42" will be 
-converted to integer.
+Create a new object with nested structure.
 
 ```yaml
 spec:
@@ -101,10 +100,9 @@ spec:
 
 ##### Example 3
 
-Create arrays or modify existing ones. "True" value will be
-converted to boolean and added as a second item of a new array
-"array" in a new object "newObject". "1337" will be added as
-an integer with a new key "newKey" as a first item of and
+Create arrays or modify existing ones. "True" will be added as 
+a second item of a new array "array" in a new object "newObject".
+"1337" will be added as a new key "newKey" as a first item of an
 existing array "commits".
 
 ```yaml
@@ -176,11 +174,11 @@ spec:
 
 ##### Store
 
-Store CE value as a Pipeline variable. Useful in combination with 
-other operations. Variables are shared across pipelines and in 
-theory may be used as a key and/or as a value.
+Store CE value as a pipeline variable. Useful in combination with
+the other operations. The variables are shared between the "context"
+and the "data" parts of the transformation pipeline.
 
-Example.
+##### Example 1
 
 Store CE type and source and add them into headers array in a payload.
 Also set a new CE type and save the original one in context extensions.
