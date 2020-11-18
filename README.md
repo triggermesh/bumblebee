@@ -3,7 +3,7 @@
 Bumblebee allows you to transform [CloudEvents](https://cloudevents.io/) via an object of kind `Transformation`. A Transformation object creates an addressable custom resource based on Knative Serving 
 aimed at flexible CloudEvents modifications. When you create a
 Transformation object, the controller creates a Knative Service that 
-accepts CloudEvents, applies the declared transformation and replies with 
+accepts CloudEvents, applies the declared transformation and replies with a
 new CloudEvent or forwards it to another addressable resource.
 
 ## Installation
