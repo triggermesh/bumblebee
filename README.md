@@ -32,7 +32,7 @@ A custom resource of kind `Transformation` can now be created, check a [sample](
 
 ## Operations
 
-Current Bumblebee supports the following basic transformation operations:
+Currently Bumblebee supports the following basic transformation operations:
 
 ### Delete
 
