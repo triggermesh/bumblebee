@@ -233,7 +233,7 @@ spec:
 
 ## Sample with Event Routing
 
-Transformations are useful to modify the payload and cloudevent event attributes when an event is routed to a Target (aka event sink) that needs to receive a specific event type and payload. The cloudevent can be routed to a Transformation addressable via a specific Trigger where
+Transformations are useful to modify the payload and CloudEvent context attributes when an event is routed to a Target (aka event sink) that needs to receive a specific event type and payload. The CloudEvent can be routed to a Transformation addressable via a specific Trigger where
 it gets modified according to the declared transformation and then gets routed to its final destination via a second Trigger as depicted in the figure below:
 
 ![bumblebee](https://user-images.githubusercontent.com/13515865/94548224-35f97400-0272-11eb-9d22-7dcd1ce0d639.png)
