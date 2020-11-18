@@ -17,7 +17,7 @@ ko apply -f ./config
 You can verify that it installed successfully by checking the CRD:
 
 ```
-$ kubectl get crd | grep transformation
+$ kubectl get crd transformations.flow.triggermesh.io
 transformations.flow.triggermesh.io                  2020-08-19T13:13:09Z
 ```
 
