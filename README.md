@@ -1,14 +1,38 @@
-# CloudEvents Transformation
+# Bumblebee: A CloudEvents Transformer
 
-Transformation is an addressable CR based on Knative Serving 
-aimed on flexible CloudEvents modifications. When you create 
-Transformation object controller creates Knative Service that 
-accepts CloudEvents, applies transformation and replies with 
+Bumblebee allows you to transform [CloudEvents](https://cloudevents.io/) via an object of kind `Transformation`. A Transformation object creates an addressable custom resource based on Knative Serving 
+aimed at flexible CloudEvents modifications. When you create a
+Transformation object, the controller creates a Knative Service that 
+accepts CloudEvents, applies the declared transformation and replies with a
 new CloudEvent or forwards it to another addressable resource.
 
-Current Transformation engine support following basic operations
+## Installation
+
+Bumblebee can be compiled and deployed from source with [ko](https://github.com/google/ko):
+
+```
+ko apply -f ./config
+```
+
+You can verify that it installed successfully by checking the CRD:
+
+```
+$ kubectl get crd transformations.flow.triggermesh.io
+transformations.flow.triggermesh.io                  2020-08-19T13:13:09Z
+```
+
+And checking that the controller is running:
+
+```
+$ kubectl get pods -n transformation -l app=transformation-controller
+transformation-controller-6bdc658bf8-pwblp                1/1     Running   0          5d19h
+```
+
+A custom resource of kind `Transformation` can now be created, check a [sample](https://github.com/triggermesh/bumblebee/blob/master/config/samples/simple-event/transformation.yaml).
 
 ## Operations
+
+Currently Bumblebee supports the following basic transformation operations:
 
 ### Delete
 
@@ -207,81 +231,14 @@ spec:
       value: $ceType
 ```
 
-## Events routing
+## Sample with Event Routing
 
-The CE with JSON payload being routed to Transformation CR where
-it gets modified according to the Specs and then being routed back
-to sender:
+Transformations are useful to modify the payload and CloudEvent context attributes when an event is routed to a Target (aka event sink) that needs to receive a specific event type and payload. The CloudEvent can be routed to a Transformation addressable via a specific Trigger where
+it gets modified according to the declared transformation and then gets routed to its final destination via a second Trigger as depicted in the figure below:
 
 ![bumblebee](https://user-images.githubusercontent.com/13515865/94548224-35f97400-0272-11eb-9d22-7dcd1ce0d639.png)
 
-
-## Example
-
-[Sample](config/samples) directory contains two examples, let's walk through one named "multi-target".
-All commands below are idempotent and assume that your current path is the repository root directory.
-
-First of all, you need to create the Knative Eventing Broker:
-
-```
-kubectl apply -f config/samples/broker.yaml
-```
-
-Next, open [config/samples/multi-target/githubsource.yaml](config/samples/multi-target/githubsource.yaml) and set `accessToken` and `secretToken` values as described in the [documentation](https://knative.dev/docs/eventing/samples/github-source/#create-github-tokens), change `ownerAndRepository` to your Github username and repository you want to track. Create the resources:
-
-```
-kubectl apply -f config/samples/multi-target/githubsource.yaml
-```
-
-After the Github source is created, open [config/samples/multi-target/googlesheet-target.yaml](config/samples/multi-target/googlesheet-target.yaml), paste the [credentials JSON key](https://github.com/triggermesh/knative-targets/blob/master/docs/googlesheet.md#prerequisites) into the `googlesheet` Secret's `credentials` field, scroll down and update GoogleSheetTarget `id` value as described in the [readme](https://github.com/triggermesh/knative-targets/blob/master/docs/googlesheet.md#creating-a-googlesheet-target). Create the resources:
-
-```
-kubectl apply -f config/samples/multi-target/googlesheet-target.yaml
-```
-
-Now let's edit our second target - [config/samples/multi-target/slack-target.yaml](config/samples/multi-target/slack-target.yaml). The `slacktarget` secret needs to have a Slack token which you can obtain by following [this](https://github.com/triggermesh/knative-targets/blob/master/docs/slack.md#creating-the-slack-app-bot-and-token-secret) document. Also, you should specify which Slack channel should receive our messages by setting its name in the `slack-transformation` object, line 56. After it's done, create the resources:
-
-```
-kubectl apply -f config/samples/multi-target/slack-target.yaml
-```
-
-The final step is to create the Githubsource events transformations:
-
-```
-kubectl apply -f config/samples/multi-target/github-transformation.yaml
-```
-
-Here is what we essentially created:
-
-![example1](https://user-images.githubusercontent.com/13515865/94557645-a909e700-0280-11eb-868b-6592b6bc8d9c.png)
-
-**(1)** - Gihubsource [githubsource-transformation-demo](config/samples/multi-target/githubsource.yaml) receives the [issues](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/webhook-events-and-payloads#webhook-payload-example-when-someone-edits-an-issue) and the [push](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/webhook-events-and-payloads#webhook-payload-example-33) event webhooks from the Github and sends it to the `transformation-demo` Broker.
-
-**(2)**, **(3)** - [first](config/samples/multi-target/github-transformation.yaml) "layer" of Triggers with Transformations are throwing away all unwanted data, standardizing different Github events into a single format, e.g.:
-
-```
-{
-  "object": "tzununbekov",
-  "subject": "triggermesh/bumblebee",
-  "verb": "created issue \"Transformation tests are failing\"",
-}
-```
-
-Original CloudEvent type changed to a common `io.triggermesh.transformation.github` value.
-
-**(4)**, **(5)** - target-specific Triggers are picking up serialized Github Events and wrapping them into the payloads digestable by the final targets, e.g. [SlackTarget](config/samples/multi-target/slack-target.yaml):
-
-```
-{
-  "channel": "github-events-channel",
-  "text": "tzununbekov at triggermesh/bumblebee: created issue \"Transformation tests are failing\"",
-}
-```
-Types are set to the values to match the corresponding Target Trigger only.
-
-**(6)**, **(7)** - finally, Events are passing through the filters of the Target Triggers and being delivered to its destinations - GoogleSheet table and Slack channel in our case.
-
-At first, this approach may seem a bit cumbersome, but taking into account a number of possible Github [Events](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/webhook-events-and-payloads) multiplied by the number of possible additional Targets, decoupling producer from consumer starts to make sense.
+The [Sample](config/samples) directory contains examples.
 
 ## Support
 
