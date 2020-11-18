@@ -24,7 +24,7 @@ transformations.flow.triggermesh.io                  2020-08-19T13:13:09Z
 And checking that the controller is running:
 
 ```
-$ kubectl get pods -n transformation | grep transformation
+$ kubectl get pods -n transformation -l app=transformation-controller
 transformation-controller-6bdc658bf8-pwblp                1/1     Running   0          5d19h
 ```
 
