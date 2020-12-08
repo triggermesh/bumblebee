@@ -30,6 +30,10 @@ transformation-controller-6bdc658bf8-pwblp                1/1     Running   0   
 
 A custom resource of kind `Transformation` can now be created, check a [sample](https://github.com/triggermesh/bumblebee/blob/master/config/samples/simple-event/transformation.yaml).
 
+## Specification
+
+Bumblebee's Specification consists of three parts: optional Sink reference and two transformation sections called "context" and "data" for corresponding [CloudEvents](https://github.com/cloudevents/spec/blob/v1.0/spec.md) components. If Bumblebee has the sink the resulting events are forwarded to the referenced object, otherwise, they will be sent back to the event producer. "Context" and "data" transformation operations are applied on the event consequently as they listed in the spec with the one exception: "store" operation runs before the rest to be able to collect variables for the runtime. 
+
 ## Operations
 
 Currently Bumblebee supports the following basic transformation operations:
@@ -196,7 +200,7 @@ spec:
     - key: object.list[0]:newItem
 ```
 
-##### Store
+### Store
 
 Store CE value as a pipeline variable. Useful in combination with
 the other operations. The variables are shared between the "context"
