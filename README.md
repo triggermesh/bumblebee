@@ -32,7 +32,7 @@ A custom resource of kind `Transformation` can now be created, check a [sample](
 
 ## Specification
 
-Bumblebee's Specification consists of three parts: optional Sink reference and two transformation sections called "context" and "data" for corresponding [CloudEvents](https://github.com/cloudevents/spec/blob/v1.0/spec.md) components. If Bumblebee has the sink the resulting events are forwarded to the referenced object, otherwise, they will be sent back to the event producer. "Context" and "data" transformation operations are applied on the event consequently as they listed in the spec with the one exception: "store" operation runs before the rest to be able to collect variables for the runtime. 
+Bumblebee's API specification consists of three parts: optional Sink reference and two transformation sections called "context" and "data" for corresponding [CloudEvents](https://github.com/cloudevents/spec/blob/v1.0/spec.md) components. If a Bumblebee object (i.e `Transformation`) has a sink then the resulting events are forwarded to the referenced object, otherwise, they will be sent back to the event producer. "context" and "data" transformation operations are applied on the event in the order they are listed in the spec with one exception: "store". The "store" operation runs before the rest to be able to collect variables for the runtime. 
 
 ## Operations
 
