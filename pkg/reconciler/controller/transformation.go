@@ -114,21 +114,12 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, trn *transformationv1alp
 func (r *Reconciler) reconcileKnService(ctx context.Context, trn *transformationv1alpha1.Transformation) (*servingv1.Service, error) {
 	logger := logging.FromContext(ctx)
 
-	dest := trn.Spec.Sink.DeepCopy()
-	if dest.Ref != nil {
-		// To call URIFromDestination(), dest.Ref must have a Namespace. If there is
-		// no Namespace defined in dest.Ref, we will use the Namespace of the source
-		// as the Namespace of dest.Ref.
-		if dest.Ref.Namespace == "" {
-			dest.Ref.Namespace = trn.GetNamespace()
-		}
-	}
-
 	var sink string
-	uri, err := r.sinkResolver.URIFromDestinationV1(ctx, *dest, trn)
-	if err != nil {
-		logger.Infof("Sink resolution error: %v", err)
-	} else {
+	if trn.Spec.Sink != (duckv1.Destination{}) {
+		uri, err := r.resolveDestination(ctx, trn)
+		if err != nil {
+			return nil, fmt.Errorf("cannot resolve Sink destination: %w", err)
+		}
 		trn.Status.SinkURI = uri
 		sink = uri.String()
 	}
@@ -188,4 +179,14 @@ func (r *Reconciler) createCloudEventAttributes(ts *transformationv1alpha1.Trans
 		}
 	}
 	return ceAttributes
+}
+
+func (r *Reconciler) resolveDestination(ctx context.Context, trn *transformationv1alpha1.Transformation) (*apis.URL, error) {
+	dest := trn.Spec.Sink.DeepCopy()
+	if dest.Ref != nil {
+		if dest.Ref.Namespace == "" {
+			dest.Ref.Namespace = trn.GetNamespace()
+		}
+	}
+	return r.sinkResolver.URIFromDestinationV1(ctx, *dest, trn)
 }
