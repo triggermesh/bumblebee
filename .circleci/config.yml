@@ -1,14 +1,14 @@
 version: 2.1
 
 orbs:
-  go: circleci/go@1.1.1
-  gcp-cli: circleci/gcp-cli@1.8.4
+  go: circleci/go@1
+  gcp-cli: circleci/gcp-cli@1
 
 jobs:
   checkout:
     executor:
       name: go/default
-      tag: '1.14'
+      tag: '1.15'
     steps:
       - checkout
       - go/mod-download-cached
@@ -21,23 +21,18 @@ jobs:
   build:
     executor:
       name: go/default
-      tag: '1.14'
+      tag: '1.15'
     steps:
       - attach_workspace:
           at: ~/
       - run:
           name: Building package
           command: make build
-      - gcp-cli/install
-      - gcp-cli/initialize
-      - run:
-          name: Building docker image
-          command: make -j8 cloudbuild-test
 
   test:
     executor:
       name: go/default
-      tag: '1.14'
+      tag: '1.15'
     steps:
       - attach_workspace:
           at: ~/
@@ -70,13 +65,13 @@ jobs:
       - gcp-cli/initialize
       - run:
           name: Publishing docker image
-          command: IMAGE_SHA=${CIRCLE_SHA1} IMAGE_TAG=${CIRCLE_TAG:-latest} make -j8 cloudbuild
+          command: IMAGE_SHA=${CIRCLE_SHA1} IMAGE_TAG=${CIRCLE_TAG:-latest} make -j4 cloudbuild
 
   deploy:
     description: Patches target cluster configuration
     executor:
       name: go/default
-      tag: '1.14'
+      tag: '1.15'
     parameters:
       cluster:
         type: string
@@ -119,7 +114,7 @@ jobs:
   release:
     executor:
       name: go/default
-      tag: '1.14'
+      tag: '1.15'
     steps:
       - attach_workspace:
           at: ~/
@@ -183,7 +178,7 @@ workflows:
           name: update-production-config
           cluster: prod
           requires:
-            - publish
+            - update-staging-config
           filters:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
