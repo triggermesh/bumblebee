@@ -1,6 +1,6 @@
 steps:
 
-- name: gcr.io/kaniko-project/executor:latest
+- name: gcr.io/kaniko-project/executor:v1.6.0-debug
   args:
   - --dockerfile=cmd/${_CMD}/Dockerfile
   - --destination=gcr.io/$PROJECT_ID/${_CMD}:${COMMIT_SHA}
