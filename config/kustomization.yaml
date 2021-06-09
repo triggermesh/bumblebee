@@ -1,0 +1,10 @@
+resources:
+- 100-namespace.yaml
+- 200-clusterrole.yaml
+- 200-serviceaccount.yaml
+- 201-clusterrolebinding.yaml
+- 300-transformation.yaml
+- 500-controller.yaml
+- config-leader-election.yaml
+- config-logging.yaml
+- config-observability.yaml
