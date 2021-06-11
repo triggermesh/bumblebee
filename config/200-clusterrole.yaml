@@ -52,7 +52,7 @@ rules:
   - coordination.k8s.io
   resources:
   - leases
-  verbs: &everything
+  verbs:
   - get
   - list
   - create
@@ -62,13 +62,20 @@ rules:
   - watch
 
 # Transformation controller creates the Knative service as its workhorse
-# to handle the CloudEvents and apply transformations, so it needs to have 
+# to handle the CloudEvents and apply transformations, so it needs to have
 # a control over the Service resources.
 - apiGroups:
   - serving.knative.dev
   resources:
   - services
-  verbs: *everything
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - delete
+  - patch
+  - watch
 
 # Record Kubernetes events
 - apiGroups:
