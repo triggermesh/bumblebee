@@ -111,12 +111,10 @@ func KsvcLabelVisibilityClusterLocal() Option {
 	return func(svc *servingv1.Service) {
 		if svc.Labels != nil {
 			svc.Labels[network.VisibilityLabelKey] = serving.VisibilityClusterLocal
-			svc.Labels[serving.VisibilityLabelKeyObsolete] = serving.VisibilityClusterLocal
 			return
 		}
 		labels := map[string]string{
-			network.VisibilityLabelKey:         serving.VisibilityClusterLocal,
-			serving.VisibilityLabelKeyObsolete: serving.VisibilityClusterLocal,
+			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		}
 		svc.Labels = labels
 	}
