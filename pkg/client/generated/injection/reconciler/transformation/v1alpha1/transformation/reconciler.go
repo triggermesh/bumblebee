@@ -22,7 +22,6 @@ import (
 	context "context"
 	json "encoding/json"
 	fmt "fmt"
-	reflect "reflect"
 
 	v1alpha1 "github.com/triggermesh/bumblebee/pkg/apis/transformation/v1alpha1"
 	internalclientset "github.com/triggermesh/bumblebee/pkg/client/generated/clientset/internalclientset"
@@ -88,13 +87,13 @@ type doReconcile func(ctx context.Context, o *v1alpha1.Transformation) reconcile
 
 // reconcilerImpl implements controller.Reconciler for v1alpha1.Transformation resources.
 type reconcilerImpl struct {
-	// LeaderAwareFuncs is inlined to help us implement reconciler.LeaderAware
+	// LeaderAwareFuncs is inlined to help us implement reconciler.LeaderAware.
 	reconciler.LeaderAwareFuncs
 
 	// Client is used to write back status updates.
 	Client internalclientset.Interface
 
-	// Listers index properties about resources
+	// Listers index properties about resources.
 	Lister transformationv1alpha1.TransformationLister
 
 	// Recorder is an event recorder for recording Event resources to the
@@ -116,7 +115,7 @@ type reconcilerImpl struct {
 	skipStatusUpdates bool
 }
 
-// Check that our Reconciler implements controller.Reconciler
+// Check that our Reconciler implements controller.Reconciler.
 var _ controller.Reconciler = (*reconcilerImpl)(nil)
 
 // Check that our generated Reconciler is always LeaderAware.
@@ -169,6 +168,9 @@ func NewReconciler(ctx context.Context, logger *zap.SugaredLogger, client intern
 		if opts.SkipStatusUpdates {
 			rec.skipStatusUpdates = true
 		}
+		if opts.DemoteFunc != nil {
+			rec.DemoteFunc = opts.DemoteFunc
+		}
 	}
 
 	return rec
@@ -179,7 +181,7 @@ func (r *reconcilerImpl) Reconcile(ctx context.Context, key string) error {
 	logger := logging.FromContext(ctx)
 
 	// Initialize the reconciler state. This will convert the namespace/name
-	// string into a distinct namespace and name, determin if this instance of
+	// string into a distinct namespace and name, determine if this instance of
 	// the reconciler is the leader, and any additional interfaces implemented
 	// by the reconciler. Returns an error is the resource key is invalid.
 	s, err := newState(key, r)
@@ -191,7 +193,7 @@ func (r *reconcilerImpl) Reconcile(ctx context.Context, key string) error {
 	// If we are not the leader, and we don't implement either ReadOnly
 	// observer interfaces, then take a fast-path out.
 	if s.isNotLeaderNorObserver() {
-		return nil
+		return controller.NewSkipKey(key)
 	}
 
 	// If configStore is set, attach the frozen configuration to the context.
@@ -209,8 +211,15 @@ func (r *reconcilerImpl) Reconcile(ctx context.Context, key string) error {
 	original, err := getter.Get(s.name)
 
 	if errors.IsNotFound(err) {
-		// The resource may no longer exist, in which case we stop processing.
+		// The resource may no longer exist, in which case we stop processing and call
+		// the ObserveDeletion handler if appropriate.
 		logger.Debugf("Resource %q no longer exists", key)
+		if del, ok := r.reconciler.(reconciler.OnDeletionInterface); ok {
+			return del.ObserveDeletion(ctx, types.NamespacedName{
+				Namespace: s.namespace,
+				Name:      s.name,
+			})
+		}
 		return nil
 	} else if err != nil {
 		return err
@@ -226,9 +235,6 @@ func (r *reconcilerImpl) Reconcile(ctx context.Context, key string) error {
 	logger = logger.With(zap.String("targetMethod", name))
 	switch name {
 	case reconciler.DoReconcileKind:
-		// Append the target method to the logger.
-		logger = logger.With(zap.String("targetMethod", "ReconcileKind"))
-
 		// Set and update the finalizer on resource if r.reconciler
 		// implements Finalizer.
 		if resource, err = r.setFinalizerIfFinalizer(ctx, resource); err != nil {
@@ -290,7 +296,7 @@ func (r *reconcilerImpl) Reconcile(ctx context.Context, key string) error {
 		var event *reconciler.ReconcilerEvent
 		if reconciler.EventAs(reconcileEvent, &event) {
 			logger.Infow("Returned an event", zap.Any("event", reconcileEvent))
-			r.Recorder.Eventf(resource, event.EventType, event.Reason, event.Format, event.Args...)
+			r.Recorder.Event(resource, event.EventType, event.Reason, event.Error())
 
 			// the event was wrapped inside an error, consider the reconciliation as failed
 			if _, isEvent := reconcileEvent.(*reconciler.ReconcilerEvent); !isEvent {
@@ -322,7 +328,7 @@ func (r *reconcilerImpl) updateStatus(ctx context.Context, existing *v1alpha1.Tr
 		}
 
 		// If there's nothing to update, just return.
-		if reflect.DeepEqual(existing.Status, desired.Status) {
+		if equality.Semantic.DeepEqual(existing.Status, desired.Status) {
 			return nil
 		}
 
@@ -392,15 +398,15 @@ func (r *reconcilerImpl) updateFinalizersFiltered(ctx context.Context, resource 
 	patcher := r.Client.FlowV1alpha1().Transformations(resource.Namespace)
 
 	resourceName := resource.Name
-	resource, err = patcher.Patch(ctx, resourceName, types.MergePatchType, patch, metav1.PatchOptions{})
+	updated, err := patcher.Patch(ctx, resourceName, types.MergePatchType, patch, metav1.PatchOptions{})
 	if err != nil {
-		r.Recorder.Eventf(resource, v1.EventTypeWarning, "FinalizerUpdateFailed",
+		r.Recorder.Eventf(existing, v1.EventTypeWarning, "FinalizerUpdateFailed",
 			"Failed to update finalizers for %q: %v", resourceName, err)
 	} else {
-		r.Recorder.Eventf(resource, v1.EventTypeNormal, "FinalizerUpdate",
+		r.Recorder.Eventf(updated, v1.EventTypeNormal, "FinalizerUpdate",
 			"Updated %q finalizers", resource.GetName())
 	}
-	return resource, err
+	return updated, err
 }
 
 func (r *reconcilerImpl) setFinalizerIfFinalizer(ctx context.Context, resource *v1alpha1.Transformation) (*v1alpha1.Transformation, error) {

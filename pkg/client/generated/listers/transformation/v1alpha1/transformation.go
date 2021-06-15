@@ -26,8 +26,10 @@ import (
 )
 
 // TransformationLister helps list Transformations.
+// All objects returned here must be treated as read-only.
 type TransformationLister interface {
 	// List lists all Transformations in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.Transformation, err error)
 	// Transformations returns an object that can list and get Transformations.
 	Transformations(namespace string) TransformationNamespaceLister
@@ -58,10 +60,13 @@ func (s *transformationLister) Transformations(namespace string) TransformationN
 }
 
 // TransformationNamespaceLister helps list and get Transformations.
+// All objects returned here must be treated as read-only.
 type TransformationNamespaceLister interface {
 	// List lists all Transformations in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.Transformation, err error)
 	// Get retrieves the Transformation from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.Transformation, error)
 	TransformationNamespaceListerExpansion
 }
