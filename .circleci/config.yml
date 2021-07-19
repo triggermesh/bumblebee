@@ -168,7 +168,7 @@ workflows:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
             branches:
-              only: master
+              only: main
       - deploy:
           name: update-staging-config
           cluster: staging
@@ -176,7 +176,7 @@ workflows:
             - publish
           filters:
             branches:
-              only: master
+              only: main
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
       - deploy:

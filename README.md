@@ -28,7 +28,7 @@ $ kubectl get pods -n transformation -l app=transformation-controller
 transformation-controller-6bdc658bf8-pwblp                1/1     Running   0          5d19h
 ```
 
-A custom resource of kind `Transformation` can now be created, check a [sample](https://github.com/triggermesh/bumblebee/blob/master/config/samples/simple-event/transformation.yaml).
+A custom resource of kind `Transformation` can now be created, check a [sample](https://github.com/triggermesh/bumblebee/blob/main/config/samples/simple-event/transformation.yaml).
 
 ## Specification
 
