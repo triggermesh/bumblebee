@@ -72,7 +72,7 @@ release: ## Build release artifacts
 		done ; \
 	done
 	$(KUBECTL) create -f config --dry-run=client -o yaml |\
-	  $(SED) 's|ko://github.com/triggermesh/bumblebee/cmd/\(.*\)|gcr.io/triggermesh-private/\1:'${IMAGE_TAG}'|' > $(DIST_DIR)/transformation.yaml
+	  $(SED) 's|ko://github.com/triggermesh/bumblebee/cmd/\(.*\)|gcr.io/$(IMAGE_REPO)/\1:'${IMAGE_TAG}'|' > $(DIST_DIR)/transformation.yaml
 
 test: install-gotestsum ## Run unit tests
 	@mkdir -p $(TEST_OUTPUT_DIR)
