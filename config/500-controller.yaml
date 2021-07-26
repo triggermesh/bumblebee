@@ -16,7 +16,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: transformation-controller
-  namespace: transformation
+  namespace: triggermesh
 spec:
   replicas: 1
   selector:
