@@ -14,7 +14,7 @@ COVER_OUTPUT_DIR  ?= $(OUTPUT_DIR)
 DIST_DIR          ?= $(OUTPUT_DIR)
 
 DOCKER            ?= docker
-IMAGE_REPO        ?= gcr.io/triggermesh
+IMAGE_REPO        ?= gcr.io/triggermesh-private
 IMAGE_TAG         ?= latest
 IMAGE_SHA         ?= $(shell git rev-parse HEAD)
 
@@ -72,7 +72,7 @@ release: ## Build release artifacts
 		done ; \
 	done
 	$(KUBECTL) create -f config --dry-run=client -o yaml |\
-	  $(SED) 's|ko://github.com/triggermesh/bumblebee/cmd/\(.*\)|gcr.io/$(IMAGE_REPO)/\1:'${IMAGE_TAG}'|' > $(DIST_DIR)/transformation.yaml
+	  $(SED) 's|ko://github.com/triggermesh/bumblebee/cmd/\(.*\)|$(IMAGE_REPO)/\1:$(IMAGE_TAG)|' > $(DIST_DIR)/transformation.yaml
 
 test: install-gotestsum ## Run unit tests
 	@mkdir -p $(TEST_OUTPUT_DIR)
