@@ -101,7 +101,7 @@ jobs:
           command: |
             for cmd in $(sed -n -e 's/^COMMANDS[[:space:]]*=[[:space:]]*\(.*\)$/\1/p' ~/project/Makefile); do
               sed -i overlays/<< parameters.cluster >>/transformation/deployment.yaml \
-                -e "s|\(gcr.io/triggermesh-private/${cmd}:\).*|\1${CIRCLE_TAG:-${CIRCLE_SHA1}}|g"
+                -e "s|\(gcr.io/triggermesh/${cmd}:\).*|\1${CIRCLE_TAG:-${CIRCLE_SHA1}}|g"
             done
             git --no-pager diff
       - run:
@@ -144,7 +144,7 @@ workflows:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
       - build:
-          context: private
+          context: production
           requires:
             - checkout
           filters:
@@ -157,7 +157,7 @@ workflows:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
       - publish:
-          context: private
+          context: production
           requires:
             - build
             - test
@@ -187,7 +187,7 @@ workflows:
             branches:
               ignore: /.*/
       - release:
-          context: private
+          context: production
           requires:
             - publish
           filters:
