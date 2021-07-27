@@ -14,7 +14,7 @@ COVER_OUTPUT_DIR  ?= $(OUTPUT_DIR)
 DIST_DIR          ?= $(OUTPUT_DIR)
 
 DOCKER            ?= docker
-IMAGE_REPO        ?= gcr.io/triggermesh-private
+IMAGE_REPO        ?= gcr.io/triggermesh
 IMAGE_TAG         ?= latest
 IMAGE_SHA         ?= $(shell git rev-parse HEAD)
 
