@@ -1,10 +1,11 @@
-apiVersion: sources.knative.dev/v1alpha2
+apiVersion: sources.knative.dev/v1
 kind: PingSource
 metadata:
   name: ping-source
 spec:
   schedule: "*/1 * * * *"
-  jsonData: '{
+  contentType: "application/json"
+  data: '{
     "First Name": "Barbara",
     "Last Name": "Singh",
     "Date of birth": {
