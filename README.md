@@ -1,3 +1,5 @@
+**This project is now archived, please go to [triggermesh/triggermesh](https://github.com/triggermesh/triggermesh) repository for additional development.**
+
 # Bumblebee: A CloudEvents Transformer
 
 Bumblebee allows you to transform [CloudEvents](https://cloudevents.io/) via an object of kind `Transformation`. A Transformation object creates an addressable custom resource based on Knative Serving 
